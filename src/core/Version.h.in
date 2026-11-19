@@ -1,0 +1,5 @@
+#pragma once
+
+namespace cutline {
+inline constexpr char kVersion[] = "@PROJECT_VERSION@";
+} // namespace cutline
