@@ -1,0 +1,35 @@
+CUTLINE third-party notices
+===========================
+
+CUTLINE is MIT licensed (see LICENSE.txt). This download also contains the
+following third-party components. Each keeps its own licence.
+
+Qt 6.10.3 (The Qt Company) — GNU Lesser General Public License v3 (LGPL-3.0)
+  Used as separate DLLs (Qt6*.dll, plugins and qml\ folders) that you may
+  replace with your own build of the same Qt version.
+  Source: https://download.qt.io/official_releases/qt/6.10/6.10.3/
+  Licence text: licenses\LGPL-3.0.txt (with the GPL-3.0 it builds on:
+  https://www.gnu.org/licenses/gpl-3.0.txt)
+
+FFmpeg 9.0.2 (the FFmpeg developers) — GNU Lesser General Public License
+v2.1 or later (LGPL-2.1-or-later)
+  Built without --enable-gpl and without --enable-nonfree, as separate DLLs
+  (avcodec-63.dll, avutil-61.dll, swresample-7.dll) that you may replace.
+  Source: https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+  Build recipe and patches used: vcpkg baseline
+  cf82c6e6a919217c1c3a36b36dc40e370a71591e, ports/ffmpeg
+  (https://github.com/microsoft/vcpkg/tree/cf82c6e6a919217c1c3a36b36dc40e370a71591e/ports/ffmpeg),
+  features avcodec, avformat, avfilter, swresample, swscale.
+  Licence text: licenses\LGPL-2.1.txt
+
+Inter 4.1 (The Inter Project Authors) — SIL Open Font License 1.1
+  Bundled inside cutline.exe. Licence: licenses\Inter-OFL.txt
+
+JetBrains Mono 2.304 (The JetBrains Mono Project Authors) — SIL Open Font
+License 1.1
+  Bundled inside cutline.exe. Licence: licenses\JetBrainsMono-OFL.txt
+
+Microsoft Visual C++ runtime (vcruntime140*.dll, msvcp140*.dll) —
+  redistributable under the Visual Studio licence terms.
+
+CUTLINE's own source code: https://github.com/AlMonDdevV/cutline (MIT)
