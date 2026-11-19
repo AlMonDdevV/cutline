@@ -19,10 +19,12 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Svg Test)
 qt_standard_project_setup(REQUIRES 6.8)
 
 include(CutlineWarnings)
+include(CutlineFFmpeg)
 include(CTest)
 include(CutlineTesting)
 
 add_subdirectory(src/core)
+add_subdirectory(src/media)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
