@@ -89,7 +89,17 @@ private slots:
     }
 
     void cleanup() {
+        // Let a closing popup finish its queued work before the window and engine go away.
+        if (m_popup) {
+            QObject::disconnect(m_popup, nullptr, this, nullptr);
+            m_popup = nullptr;
+        }
+        if (window)
+            window->close();
+        QCoreApplication::processEvents();
         engine.reset();
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        QCoreApplication::processEvents();
         router.reset();
         registry.reset();
         m_counters.clear();

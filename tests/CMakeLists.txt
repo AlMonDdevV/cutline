@@ -18,3 +18,4 @@ cutline_add_test(NAME tst_actions SOURCES app/tst_actions.cpp LIBS cutline_ui GU
 cutline_add_test(NAME tst_shortcutprofile SOURCES app/tst_shortcutprofile.cpp LIBS cutline_ui GUI)
 cutline_add_test(NAME tst_router SOURCES app/tst_router.cpp LIBS cutline_ui cutline_uiplugin GUI)
 target_compile_definitions(tst_router PRIVATE CUTLINE_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/app/data")
+cutline_add_test(NAME tst_workspaces SOURCES app/tst_workspaces.cpp LIBS cutline_ui GUI)

@@ -4,6 +4,12 @@ target_link_libraries(cutline_ico PUBLIC Qt6::Gui)
 cutline_set_warnings(cutline_ico)
 
 qt_add_library(cutline_ui STATIC
+    layout/WorkspaceLayout.h
+    layout/WorkspaceLayout.cpp
+    layout/PanelRegistry.h
+    layout/PanelRegistry.cpp
+    layout/WorkspaceManager.h
+    layout/WorkspaceManager.cpp
     actions/Contexts.h
     actions/Action.h
     actions/Action.cpp
