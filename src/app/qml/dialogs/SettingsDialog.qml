@@ -66,7 +66,7 @@ CDialog {
     }
     Component {
         id: keyboardPage
-        Loader { source: "KeyboardSettingsPage.qml" }
+        KeyboardSettingsPage {}
     }
 
     footer: [ CButton { text: qsTr("Done"); emphasized: true; onClicked: dialog.close() } ]

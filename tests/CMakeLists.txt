@@ -24,3 +24,4 @@ cutline_add_test(NAME tst_defaultactions SOURCES app/tst_defaultactions.cpp LIBS
 cutline_add_test(NAME tst_mainwindow SOURCES ui/tst_mainwindow.cpp LIBS cutline_ui cutline_uiplugin GUI)
 add_dependencies(tst_mainwindow cutline)
 target_compile_definitions(tst_themelibrary PRIVATE CUTLINE_REPO_DIR="${PROJECT_SOURCE_DIR}")
+cutline_add_test(NAME tst_shortcutsmodel SOURCES app/tst_shortcutsmodel.cpp LIBS cutline_ui GUI)

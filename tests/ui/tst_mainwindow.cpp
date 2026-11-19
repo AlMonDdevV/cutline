@@ -58,9 +58,34 @@ class TestMainWindow : public QObject {
         return nullptr;
     }
     QQuickItem* item(const QString& name) {
-        if (QQuickItem* found = findItem(window->contentItem(), name))
+        // Start above contentItem so popups in the overlay are searched too.
+        QQuickItem* root = window->contentItem()->parentItem() ? window->contentItem()->parentItem() : window->contentItem();
+        if (QQuickItem* found = findItem(root, name))
             return found;
         return window->findChild<QQuickItem*>(name);
+    }
+
+    QObject* openKeyboardPage() {
+        services->actions().action(u"help.shortcuts"_s)->trigger();
+        QObject* settings = object(u"dialog.settings"_s);
+        if (!settings || !QTest::qWaitFor([settings] { return settings->property("opened").toBool(); }, 3000))
+            return nullptr;
+        return settings;
+    }
+
+    void record(const QString& actionId, Qt::Key key, Qt::KeyboardModifiers mods) {
+        // Like a user: search for the action so its row is on screen.
+        QQuickItem* search = item(u"keyboard.search"_s);
+        QVERIFY(search);
+        search->setProperty("text", services->actions().action(actionId)->title());
+        QQuickItem* button = nullptr;
+        QTRY_VERIFY((button = item(u"keyboard.record."_s + actionId)) != nullptr);
+        QVERIFY2(button, qPrintable(actionId));
+        QMetaObject::invokeMethod(button, "clicked");
+        QQuickItem* recorder = item(u"keyboard.recorder."_s + actionId);
+        QVERIFY(recorder);
+        QTRY_VERIFY(recorder->hasActiveFocus());
+        QTest::keyClick(window, key, mods);
     }
     QObject* object(const QString& name) { return window->findChild<QObject*>(name); }
 
@@ -278,6 +303,67 @@ private slots:
         QObject* welcome = object(u"dialog.welcome"_s);
         QTest::qWait(200);
         QVERIFY(!welcome || !welcome->property("visible").toBool());
+    }
+
+    void ctrlCommaOpensSettings() {
+        launch();
+        focusPanel(u"timeline"_s);
+        QTest::keyClick(window, Qt::Key_Comma, Qt::ControlModifier);
+        QObject* settings = object(u"dialog.settings"_s);
+        QVERIFY(settings);
+        QTRY_VERIFY(settings->property("opened").toBool());
+        QCOMPARE(settings->property("page").toString(), u"general"_s);
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(!settings->property("visible").toBool());
+    }
+
+    void recordShortcutFlow() {
+        launch();
+        QObject* settings = openKeyboardPage();
+        QVERIFY(settings);
+        QCOMPARE(settings->property("page").toString(), u"keyboard"_s);
+        record(u"panel.history"_s, Qt::Key_H, Qt::ControlModifier);
+        QTRY_COMPARE(services->actions().action(u"panel.history"_s)->shortcuts(),
+                     QList<QKeySequence>{QKeySequence(u"Ctrl+H"_s)});
+        QMetaObject::invokeMethod(settings, "close");
+        QTRY_VERIFY(!settings->property("visible").toBool());
+        focusPanel(u"timeline"_s);
+        QTest::keyClick(window, Qt::Key_H, Qt::ControlModifier);
+        QTRY_VERIFY(item(u"panel.history"_s) && item(u"panel.history"_s)->hasActiveFocus());
+    }
+
+    void conflictFlow() {
+        launch();
+        QVERIFY(openKeyboardPage());
+        record(u"panel.history"_s, Qt::Key_S, Qt::ControlModifier);
+        QObject* conflict = object(u"dialog.shortcutConflict"_s);
+        QVERIFY(conflict);
+        QTRY_VERIFY(conflict->property("opened").toBool());
+        QCOMPARE(conflict->property("message").toString(),
+                 u"%1 is already used by “Save Project” (Everywhere)."_s.arg(QKeySequence(u"Ctrl+S"_s).toString(QKeySequence::NativeText)));
+        QMetaObject::invokeMethod(item(u"dialog.shortcutConflict.reassign"_s), "clicked");
+        QTRY_VERIFY(services->actions().action(u"file.save"_s)->shortcuts().isEmpty());
+        QMetaObject::invokeMethod(item(u"keyboard.restoreAll"_s), "clicked");
+        QTRY_COMPARE(services->actions().action(u"file.save"_s)->shortcuts(), QList<QKeySequence>{QKeySequence(u"Ctrl+S"_s)});
+    }
+
+    void searchFieldDoesNotTriggerActions() {
+        launch();
+        int hits = 0;
+        ActionSpec s;
+        s.id = u"test.snap"_s;
+        s.title = u"Snap"_s;
+        s.defaultShortcuts = {QKeySequence(u"S"_s)};
+        services->actions().add(s, [&hits] { ++hits; });
+        QVERIFY(openKeyboardPage());
+        QQuickItem* search = item(u"keyboard.search"_s);
+        QVERIFY(search);
+        search->forceActiveFocus();
+        QTRY_VERIFY(search->hasActiveFocus());
+        QTest::keyClick(window, 's');
+        QTest::keyClick(window, Qt::Key_Space);
+        QCOMPARE(hits, 0);
+        QCOMPARE(search->property("text").toString(), u"s "_s);
     }
 
     void screenshotMode() {

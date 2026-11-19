@@ -9,6 +9,8 @@ qt_add_library(cutline_ui STATIC
     QmlSingletons.h
     actions/DefaultActions.h
     actions/DefaultActions.cpp
+    actions/ShortcutsModel.h
+    actions/ShortcutsModel.cpp
     controllers/AppSettings.h
     controllers/AppSettings.cpp
     controllers/RecentProjects.h
@@ -88,6 +90,8 @@ qt_add_qml_module(cutline_ui
         qml/dialogs/WelcomeScreen.qml
         qml/dialogs/SettingsDialog.qml
         qml/dialogs/GeneralSettingsPage.qml
+        qml/dialogs/KeyboardSettingsPage.qml
+        qml/dialogs/ShortcutConflictDialog.qml
 )
 
 qt_add_resources(cutline_ui "cutline_theme"
