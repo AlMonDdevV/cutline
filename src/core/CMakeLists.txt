@@ -1,4 +1,4 @@
-configure_file(Version.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/cutline/Version.h" @ONLY)
+configure_file(Version.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h" @ONLY)
 
 add_library(cutline_core STATIC
     Result.h
