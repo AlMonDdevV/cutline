@@ -27,4 +27,10 @@ both use, can't fetch their package index yet. 6.10.3 is the newest version both
 
 ## Fonts and icons
 
-Added in Milestone 2. Each will be listed here with its version and licence.
+| Asset | Version | Licence | Files bundled |
+|---|---|---|---|
+| Inter | 4.1 (github.com/rsms/inter) | SIL OFL 1.1 (`resources/fonts/Inter-OFL.txt`) | Inter-Regular, Inter-Medium, Inter-SemiBold (TTF) |
+| JetBrains Mono | 2.304 (github.com/JetBrains/JetBrainsMono) | SIL OFL 1.1 (`resources/fonts/JetBrainsMono-OFL.txt`) | JetBrainsMono-Regular, JetBrainsMono-Medium (TTF) |
+| CUTLINE icons | own drawings | MIT (this repository) | `src/app/icons/svg/*.svg` |
+
+The fonts are about 2 MB, compiled into the app as Qt resources and registered at startup.

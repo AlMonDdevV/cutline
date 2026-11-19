@@ -1,0 +1,29 @@
+{
+  "name": "light",
+  "colors": {
+    "window": "#D9D9D9",
+    "panel": "#EBEBEB",
+    "panelRaised": "#E2E2E2",
+    "field": "#F5F5F5",
+    "divider": "#CFCFCF",
+    "hover": "#E0E0E0",
+    "pressed": "#D4D4D4",
+    "selection": "#33C62F35",
+    "text": "#1A1A1A",
+    "textMuted": "#5C5C5C",
+    "textDisabled": "#9A9A9A",
+    "textOnAccent": "#FFFFFF",
+    "accent": "#C62F35",
+    "accentHover": "#A82328",
+    "focusRing": "#C62F35",
+    "viewerSurround": "#2B2B2B",
+    "clipVideo": "#3D6EA8",
+    "clipAudio": "#3E8E5A",
+    "clipTitle": "#B9A27A",
+    "clipGenerator": "#7E66B8",
+    "danger": "#B42318",
+    "warning": "#AD5700",
+    "success": "#2A7E3B",
+    "timecodeDim": "#9A9A9A"
+  }
+}
