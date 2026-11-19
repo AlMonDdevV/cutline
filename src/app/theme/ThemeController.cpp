@@ -109,6 +109,36 @@ QStringList ThemeController::themeNames() const {
 
 void ThemeController::refreshThemes() { emit themesChanged(); }
 
+QVariantMap ThemeController::importTheme(const QUrl& file) {
+    if (!m_library)
+        return {{QStringLiteral("ok"), false}, {QStringLiteral("error"), QStringLiteral("Custom themes aren't available.")}};
+    const QString path = file.isLocalFile() ? file.toLocalFile() : file.toString();
+    auto imported = m_library->importFrom(path);
+    if (!imported.ok())
+        return {{QStringLiteral("ok"), false}, {QStringLiteral("error"), imported.error().message}, {QStringLiteral("warnings"), QStringList()}};
+    QFile f(path);
+    QString name;
+    if (f.open(QIODevice::ReadOnly)) {
+        auto parsed = parsePalette(f.readAll());
+        if (parsed.ok())
+            name = parsed.value().name.trimmed();
+    }
+    refreshThemes();
+    if (!name.isEmpty())
+        setMode(QStringLiteral("custom:") + name);
+    return {{QStringLiteral("ok"), true}, {QStringLiteral("name"), name}, {QStringLiteral("warnings"), imported.value().warnings}};
+}
+
+QString ThemeController::exportTheme(const QUrl& file) const {
+    const QString path = file.isLocalFile() ? file.toLocalFile() : file.toString();
+    Palette p = m_palette;
+    if (p.name.isEmpty() || p.name == QLatin1String("dark") || p.name == QLatin1String("light"))
+        p.name = QStringLiteral("My %1 theme").arg(dark() ? QStringLiteral("dark") : QStringLiteral("light"));
+    ThemeLibrary scratch(QString{});
+    const Status s = (m_library ? *m_library : scratch).exportTo(p, path);
+    return s.ok ? QString() : s.message;
+}
+
 void ThemeController::setScale(qreal scale) {
     const qreal clamped = std::clamp(scale, 0.9, 1.5);
     if (qFuzzyCompare(clamped, m_scale))

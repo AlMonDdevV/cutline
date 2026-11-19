@@ -18,6 +18,7 @@ class WorkspaceManager : public QObject {
     Q_PROPERTY(QString current READ current NOTIFY currentChanged)
     Q_PROPERTY(QStringList names READ names NOTIFY namesChanged)
     Q_PROPERTY(int revision READ revision NOTIFY layoutChanged)
+    Q_PROPERTY(int structureRevision READ structureRevision NOTIFY structureRevisionChanged)
 
 public:
     WorkspaceManager(const PanelRegistry& panels, QSettings& settings, QObject* parent = nullptr);
@@ -27,6 +28,7 @@ public:
     QString current() const { return layout().name; }
     QStringList names() const;
     int revision() const { return m_revision; }
+    int structureRevision() const { return m_structureRevision; }
     QString loadWarning() const { return m_loadWarning; }
     const PanelRegistry& panels() const { return m_panels; }
 
@@ -42,6 +44,7 @@ public:
     Q_INVOKABLE void movePanel(const QString& id, int area);
     Q_INVOKABLE QString panelTitle(const QString& id) const;
     Q_INVOKABLE QString panelComponent(const QString& id) const;
+    Q_INVOKABLE QSize panelMinimumSize(const QString& id) const;
 
     Q_INVOKABLE QVariantList sizes(const QString& which) const; // "top" | "vertical" | "bottom"
     Q_INVOKABLE void setSizes(const QString& which, const QVariantList& fractions);
@@ -61,6 +64,7 @@ signals:
     void currentChanged();
     void namesChanged();
     void layoutChanged();
+    void structureRevisionChanged();
 
 private:
     struct Entry {
@@ -70,7 +74,8 @@ private:
 
     WorkspaceLayout& live() { return m_entries[m_current].live; }
     void load();
-    void changed(bool structural = false);
+    // persist: write settings now (else debounced); structure: panels moved/shown/hidden (not just sizes or tabs).
+    void changed(bool persist, bool structure);
     QList<double>* sizesFor(const QString& which);
     int indexOf(const QString& name) const;
 
@@ -79,6 +84,7 @@ private:
     QList<Entry> m_entries;
     int m_current = 0;
     int m_revision = 0;
+    int m_structureRevision = 0;
     QString m_lastError;
     QString m_loadWarning;
     QTimer m_persistTimer;

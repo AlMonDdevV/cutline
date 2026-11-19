@@ -22,6 +22,13 @@
 
 namespace cutline::qml {
 
+inline AppServices* services() {
+    AppServices* s = AppServices::instance();
+    if (!s)
+        qFatal("CUTLINE: create cutline::AppServices before loading QML");
+    return s;
+}
+
 template <class T>
 T* owned(T& object) {
     QJSEngine::setObjectOwnership(&object, QJSEngine::CppOwnership);
@@ -34,7 +41,7 @@ struct ActionsSingleton {
     QML_NAMED_ELEMENT(Actions)
     QML_SINGLETON
 public:
-    static cutline::ActionRegistry* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->actions()); }
+    static cutline::ActionRegistry* create(QQmlEngine*, QJSEngine*) { return owned(services()->actions()); }
 };
 
 struct ShortcutsSingleton {
@@ -43,7 +50,7 @@ struct ShortcutsSingleton {
     QML_NAMED_ELEMENT(Shortcuts)
     QML_SINGLETON
 public:
-    static cutline::ShortcutRouter* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->router()); }
+    static cutline::ShortcutRouter* create(QQmlEngine*, QJSEngine*) { return owned(services()->router()); }
 };
 
 struct WorkspacesSingleton {
@@ -52,7 +59,7 @@ struct WorkspacesSingleton {
     QML_NAMED_ELEMENT(Workspaces)
     QML_SINGLETON
 public:
-    static cutline::WorkspaceManager* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->workspaces()); }
+    static cutline::WorkspaceManager* create(QQmlEngine*, QJSEngine*) { return owned(services()->workspaces()); }
 };
 
 struct ThemeSingleton {
@@ -61,7 +68,7 @@ struct ThemeSingleton {
     QML_NAMED_ELEMENT(Theme)
     QML_SINGLETON
 public:
-    static cutline::ThemeController* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->theme()); }
+    static cutline::ThemeController* create(QQmlEngine*, QJSEngine*) { return owned(services()->theme()); }
 };
 
 struct ProjectSingleton {
@@ -70,7 +77,7 @@ struct ProjectSingleton {
     QML_NAMED_ELEMENT(Project)
     QML_SINGLETON
 public:
-    static cutline::ProjectController* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->project()); }
+    static cutline::ProjectController* create(QQmlEngine*, QJSEngine*) { return owned(services()->project()); }
 };
 
 struct SettingsSingleton {
@@ -79,7 +86,7 @@ struct SettingsSingleton {
     QML_NAMED_ELEMENT(Settings)
     QML_SINGLETON
 public:
-    static cutline::AppSettings* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->settings()); }
+    static cutline::AppSettings* create(QQmlEngine*, QJSEngine*) { return owned(services()->settings()); }
 };
 
 struct RecentSingleton {
@@ -88,7 +95,7 @@ struct RecentSingleton {
     QML_NAMED_ELEMENT(Recent)
     QML_SINGLETON
 public:
-    static cutline::RecentProjects* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->recent()); }
+    static cutline::RecentProjects* create(QQmlEngine*, QJSEngine*) { return owned(services()->recent()); }
 };
 
 struct TimecodeSingleton {
@@ -97,7 +104,7 @@ struct TimecodeSingleton {
     QML_NAMED_ELEMENT(Timecode)
     QML_SINGLETON
 public:
-    static cutline::TimecodeHelper* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->timecode()); }
+    static cutline::TimecodeHelper* create(QQmlEngine*, QJSEngine*) { return owned(services()->timecode()); }
 };
 
 struct AppInfoSingleton {
@@ -106,7 +113,7 @@ struct AppInfoSingleton {
     QML_NAMED_ELEMENT(AppInfo)
     QML_SINGLETON
 public:
-    static cutline::AppInfo* create(QQmlEngine*, QJSEngine*) { return owned(AppServices::instance()->info()); }
+    static cutline::AppInfo* create(QQmlEngine*, QJSEngine*) { return owned(services()->info()); }
 };
 
 // Types QML sees as property values (not creatable).

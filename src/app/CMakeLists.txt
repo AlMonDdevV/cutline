@@ -60,6 +60,34 @@ qt_add_qml_module(cutline_ui
     QML_FILES
         qml/Main.qml
         qml/controls/Icon.qml
+        qml/controls/CButton.qml
+        qml/controls/CToolButton.qml
+        qml/controls/CTextField.qml
+        qml/controls/CComboBox.qml
+        qml/controls/CMenu.qml
+        qml/controls/CMenuItem.qml
+        qml/controls/CDialog.qml
+        qml/controls/InspectorRow.qml
+        qml/controls/SectionHeader.qml
+        qml/controls/TimecodeLabel.qml
+        qml/controls/PanelFrame.qml
+        qml/shell/AppMenuBar.qml
+        qml/shell/HeaderBar.qml
+        qml/shell/StatusBar.qml
+        qml/shell/WorkspaceFrame.qml
+        qml/shell/PanelGroup.qml
+        qml/panels/ViewerPanel.qml
+        qml/panels/TimelinePanel.qml
+        qml/panels/TrackHeader.qml
+        qml/panels/InspectorPanel.qml
+        qml/panels/HistoryPanel.qml
+        qml/dialogs/SaveChangesDialog.qml
+        qml/dialogs/ErrorDialog.qml
+        qml/dialogs/AboutDialog.qml
+        qml/dialogs/SaveWorkspaceDialog.qml
+        qml/dialogs/WelcomeScreen.qml
+        qml/dialogs/SettingsDialog.qml
+        qml/dialogs/GeneralSettingsPage.qml
 )
 
 qt_add_resources(cutline_ui "cutline_theme"
@@ -75,6 +103,12 @@ qt_add_resources(cutline_ui "cutline_icons"
     PREFIX "/cutline/icons"
     BASE icons/svg
     FILES ${_icon_svgs}
+)
+
+qt_add_resources(cutline_ui "cutline_brand"
+    PREFIX "/cutline/icons"
+    BASE icons
+    FILES icons/cutline-mark.svg
 )
 
 set(_fonts_dir "${PROJECT_SOURCE_DIR}/resources/fonts")

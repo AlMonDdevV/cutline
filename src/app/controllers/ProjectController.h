@@ -20,6 +20,7 @@ class TracksModel;
 class ProjectController : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString projectName READ projectName NOTIFY projectChanged)
+    Q_PROPERTY(int revision READ revision NOTIFY projectChanged)
     Q_PROPERTY(QString filePath READ filePath NOTIFY projectChanged)
     Q_PROPERTY(QString windowTitle READ windowTitle NOTIFY titleChanged)
     Q_PROPERTY(bool dirty READ dirty NOTIFY dirtyChanged)
@@ -43,6 +44,7 @@ public:
     const Sequence* currentSequence() const;
 
     QString projectName() const { return m_document->project().name; }
+    int revision() const { return int(m_document->revision()); }
     QString filePath() const { return m_document->filePath(); }
     QString windowTitle() const;
     bool dirty() const { return m_document->isDirty(); }
@@ -62,6 +64,7 @@ public:
     // "" or "youtube" = 1920×1080 30 fps; "vertical" = 1080×1920 30 fps (Shorts, TikTok, Reels).
     Q_INVOKABLE void newProject(const QString& preset = {});
     Q_INVOKABLE bool openProject(const QUrl& file);
+    Q_INVOKABLE bool openPath(const QString& path) { return openProject(QUrl::fromLocalFile(path)); }
     Q_INVOKABLE bool save();
     Q_INVOKABLE bool saveAs(const QUrl& file);
     Q_INVOKABLE void undo();

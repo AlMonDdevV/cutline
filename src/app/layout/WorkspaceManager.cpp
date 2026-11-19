@@ -74,10 +74,14 @@ void WorkspaceManager::persistNow() {
     m_settings.sync();
 }
 
-void WorkspaceManager::changed(bool structural) {
+void WorkspaceManager::changed(bool persist, bool structure) {
     ++m_revision;
     emit layoutChanged();
-    if (structural)
+    if (structure) {
+        ++m_structureRevision;
+        emit structureRevisionChanged();
+    }
+    if (persist)
         persistNow();
     else
         m_persistTimer.start();
@@ -109,7 +113,7 @@ void WorkspaceManager::setCurrentIn(int area, const QString& panelId) {
     if (!validArea(area) || !panelsIn(area).contains(panelId) || currentIn(area) == panelId)
         return;
     live().areas[size_t(area)].current = panelId;
-    changed();
+    changed(false, false);
 }
 
 bool WorkspaceManager::isAreaVisible(int area) const { return validArea(area) && !panelsIn(area).isEmpty(); }
@@ -133,7 +137,7 @@ void WorkspaceManager::showPanel(const QString& id) {
         live().areas[size_t(area)].panels << id;
     }
     live().areas[size_t(area)].current = id;
-    changed();
+    changed(false, true);
 }
 
 void WorkspaceManager::hidePanel(const QString& id) {
@@ -144,7 +148,7 @@ void WorkspaceManager::hidePanel(const QString& id) {
     state.panels.removeAll(id);
     if (state.current == id)
         state.current = state.panels.isEmpty() ? QString() : state.panels.first();
-    changed();
+    changed(false, true);
 }
 
 void WorkspaceManager::togglePanel(const QString& id) { isPanelVisible(id) ? hidePanel(id) : showPanel(id); }
@@ -163,7 +167,7 @@ void WorkspaceManager::movePanel(const QString& id, int area) {
     }
     live().areas[size_t(area)].panels << id;
     live().areas[size_t(area)].current = id;
-    changed();
+    changed(false, true);
 }
 
 QString WorkspaceManager::panelTitle(const QString& id) const {
@@ -174,6 +178,11 @@ QString WorkspaceManager::panelTitle(const QString& id) const {
 QString WorkspaceManager::panelComponent(const QString& id) const {
     const PanelInfo* info = m_panels.find(id);
     return info ? info->component : QString();
+}
+
+QSize WorkspaceManager::panelMinimumSize(const QString& id) const {
+    const PanelInfo* info = m_panels.find(id);
+    return info ? info->minimumSize : QSize();
 }
 
 QList<double>* WorkspaceManager::sizesFor(const QString& which) {
@@ -205,7 +214,7 @@ void WorkspaceManager::setSizes(const QString& which, const QVariantList& fracti
     if (normalized == *target)
         return;
     *target = normalized;
-    changed();
+    changed(false, false);
 }
 
 bool WorkspaceManager::saveAs(const QString& name) {
@@ -229,7 +238,7 @@ bool WorkspaceManager::saveAs(const QString& name) {
     m_lastError.clear();
     emit namesChanged();
     emit currentChanged();
-    changed(true);
+    changed(true, true);
     return true;
 }
 
@@ -242,14 +251,14 @@ bool WorkspaceManager::switchTo(const QString& name) {
     if (index != m_current) {
         m_current = index;
         emit currentChanged();
-        changed(true);
+        changed(true, true);
     }
     return true;
 }
 
 void WorkspaceManager::resetCurrent() {
     m_entries[m_current].live = m_entries[m_current].saved;
-    changed(true);
+    changed(true, true);
 }
 
 bool WorkspaceManager::remove(const QString& name) {
@@ -271,7 +280,7 @@ bool WorkspaceManager::remove(const QString& name) {
     emit namesChanged();
     if (wasCurrent)
         emit currentChanged();
-    changed(true);
+    changed(true, true);
     return true;
 }
 

@@ -1,6 +1,10 @@
+#include "app/AppServices.h"
+#include "app/icons/IconProvider.h"
+
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QTemporaryDir>
 #include <QtQml/qqmlextensionplugin.h>
 #include <QtTest>
 
@@ -15,12 +19,15 @@ private slots:
     void initTestCase() { QQuickStyle::setStyle(u"Basic"_s); }
 
     void mainLoads() {
+        QTemporaryDir config;
+        cutline::AppServices services(config.path());
         QQmlApplicationEngine engine;
+        engine.addImageProvider(u"icons"_s, new cutline::IconProvider);
         engine.loadFromModule("Cutline", "Main");
         QCOMPARE(engine.rootObjects().size(), 1);
         auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         QVERIFY(window);
-        QCOMPARE(window->title(), u"CUTLINE"_s);
+        QCOMPARE(window->title(), u"Untitled — CUTLINE"_s);
     }
 };
 

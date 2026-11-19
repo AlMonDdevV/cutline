@@ -153,6 +153,8 @@ bool ShortcutRouter::handleKey(QQuickWindow* window, QKeyEvent* event, bool dryR
     if (textEntry && escape) {
         if (!dryRun) {
             QQuickItem* root = panelRoot(focus);
+            if (focus->metaObject()->indexOfMethod("cancelEditing()") >= 0)
+                QMetaObject::invokeMethod(focus, "cancelEditing"); // Escape reverts, then leaves the field
             focus->setFocus(false);
             if (root && !root->hasActiveFocus())
                 root->forceActiveFocus();

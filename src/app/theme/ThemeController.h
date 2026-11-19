@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QUrl>
+#include <QVariantMap>
 
 namespace cutline {
 
@@ -102,6 +104,11 @@ public:
     QString warning() const { return m_warning; }
     // Re-reads the custom theme list (after an import or removal).
     Q_INVOKABLE void refreshThemes();
+    // Imports a palette JSON into the custom theme library and switches to it.
+    // Returns {ok, name, warnings: [..], error}.
+    Q_INVOKABLE QVariantMap importTheme(const QUrl& file);
+    // Writes the current palette; returns "" or an error message.
+    Q_INVOKABLE QString exportTheme(const QUrl& file) const;
 
     qreal scale() const { return m_scale; }
     void setScale(qreal scale);
