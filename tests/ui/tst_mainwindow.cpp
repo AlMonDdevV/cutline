@@ -97,7 +97,7 @@ class TestMainWindow : public QObject {
     }
 
     QString focusedPanel() {
-        for (const QString id : {u"viewer"_s, u"inspector"_s, u"history"_s, u"timeline"_s})
+        for (const QString& id : {u"viewer"_s, u"inspector"_s, u"history"_s, u"timeline"_s})
             if (QQuickItem* p = item(u"panel."_s + id); p && p->hasActiveFocus())
                 return id;
         return {};
@@ -125,7 +125,7 @@ private slots:
     void loads() {
         launch();
         QCOMPARE(window->title(), u"Untitled — CUTLINE"_s);
-        for (const QString id : {u"viewer"_s, u"timeline"_s, u"inspector"_s})
+        for (const QString& id : {u"viewer"_s, u"timeline"_s, u"inspector"_s})
             QVERIFY2(item(u"panel."_s + id) && item(u"panel."_s + id)->isVisible(), qPrintable(id));
         QVERIFY(item(u"panel.history"_s));
     }

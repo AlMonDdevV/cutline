@@ -2,7 +2,8 @@
 # Applies the project warning level, and -Werror / /WX when CUTLINE_WERROR is ON.
 function(cutline_set_warnings target)
     if(MSVC)
-        target_compile_options(${target} PRIVATE /W4 /permissive- /utf-8 /Zc:__cplusplus)
+        # C4702 (unreachable code) fires inside Qt's own templates under optimisation: a known false positive.
+        target_compile_options(${target} PRIVATE /W4 /permissive- /utf-8 /Zc:__cplusplus /wd4702)
         if(CUTLINE_WERROR)
             target_compile_options(${target} PRIVATE /WX)
         endif()
