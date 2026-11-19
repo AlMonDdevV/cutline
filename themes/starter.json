@@ -1,0 +1,23 @@
+{
+  "format": "cutline.theme",
+  "version": 1,
+  "name": "My Theme",
+  "author": "Your name",
+  "description": "Starts from Dark. Change any value; delete the ones you don't need.",
+  "base": "dark",
+  "colors": {
+    "accent": "#3D8BFD",
+    "accentHover": "#5C9DFD",
+    "focusRing": "#3D8BFD",
+    "selection": "#403D8BFD",
+    "textOnAccent": "#0B0B0B"
+  },
+  "fonts": {
+    "ui": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "metrics": {
+    "radius": 4,
+    "density": 1.0
+  }
+}

@@ -2,6 +2,8 @@
 
 #include "app/theme/ThemeLibrary.h"
 
+#include <QDesktopServices>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QFontDatabase>
@@ -143,6 +145,16 @@ QStringList ThemeController::themeNames() const {
 }
 
 void ThemeController::refreshThemes() { emit themesChanged(); }
+
+QString ThemeController::themesFolder() const { return m_library ? m_library->directory() : QString(); }
+
+void ThemeController::openThemesFolder() const {
+    const QString folder = themesFolder();
+    if (folder.isEmpty())
+        return;
+    QDir().mkpath(folder);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(folder));
+}
 
 QVariantMap ThemeController::importTheme(const QUrl& file) {
     if (!m_library)

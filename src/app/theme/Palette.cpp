@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 
 #include <cmath>
 
@@ -53,6 +54,12 @@ Result<Palette> parsePalette(const QByteArray& json) {
     const QString name = root.value(QLatin1String("name")).toString().trimmed();
     if (name.isEmpty())
         return Error{Error::Code::NotACutlineProject, kNotATheme};
+    // The same rules as schema/cutline-theme-v1.schema.json, so the website and the app agree.
+    if (name.size() > 40)
+        return Error{Error::Code::Validation, QStringLiteral("Theme names can be at most 40 characters.")};
+    static const QRegularExpression forbidden(QStringLiteral("[\\\\/:*?\"<>|\\x00-\\x1f]"));
+    if (name.contains(forbidden))
+        return Error{Error::Code::Validation, QStringLiteral("Theme names can't contain \\ / : * ? \" < > or |.")};
     if (root.value(QLatin1String("version")).toInt(1) > kThemeFormatVersion)
         return Error{Error::Code::NewerVersion, QStringLiteral("“%1” was made for a newer version of CUTLINE.").arg(name)};
     const QJsonValue colorsValue = root.value(QLatin1String("colors"));
@@ -72,8 +79,12 @@ Result<Palette> parsePalette(const QByteArray& json) {
         return Error{Error::Code::NotACutlineProject, kNotATheme};
     }
     palette.name = name;
-    palette.author = root.value(QLatin1String("author")).toString();
-    palette.description = root.value(QLatin1String("description")).toString();
+    palette.author = root.value(QLatin1String("author")).toString().trimmed();
+    palette.description = root.value(QLatin1String("description")).toString().trimmed();
+    if (palette.author.size() > 60)
+        return invalid(QStringLiteral("author can be at most 60 characters."));
+    if (palette.description.size() > 200)
+        return invalid(QStringLiteral("description can be at most 200 characters."));
 
     const QJsonObject colors = colorsValue.toObject();
     for (const QString& key : kPaletteKeys + kOptionalPaletteKeys) {
@@ -82,7 +93,9 @@ Result<Palette> parsePalette(const QByteArray& json) {
                 continue;
             return Error{Error::Code::MissingField, QStringLiteral("Theme \"%1\" is missing colour \"%2\".").arg(name, key)};
         }
-        const QColor color = QColor::fromString(colors.value(key).toString());
+        static const QRegularExpression hex(QStringLiteral("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"));
+        const QString text = colors.value(key).toString();
+        const QColor color = hex.match(text).hasMatch() ? QColor::fromString(text) : QColor();
         if (!color.isValid())
             return Error{Error::Code::InvalidValue,
                          QStringLiteral("Theme \"%1\" has an invalid colour for \"%2\".").arg(name, key)};
@@ -100,6 +113,11 @@ Result<Palette> parsePalette(const QByteArray& json) {
     const QJsonObject fonts = root.value(QLatin1String("fonts")).toObject();
     palette.uiFont = fonts.value(QLatin1String("ui")).toString(palette.uiFont).trimmed();
     palette.monoFont = fonts.value(QLatin1String("mono")).toString(palette.monoFont).trimmed();
+    // Family names only: never a path, URL or embedded font data.
+    static const QRegularExpression family(QStringLiteral("^[A-Za-z0-9][A-Za-z0-9 _-]{0,63}$"));
+    for (const QString& f : {palette.uiFont, palette.monoFont})
+        if (!f.isEmpty() && !family.match(f).hasMatch())
+            return invalid(QStringLiteral("font names can only use letters, numbers, spaces, hyphens and underscores."));
 
     const QJsonObject metrics = root.value(QLatin1String("metrics")).toObject();
     if (metrics.contains(QLatin1String("radius"))) {

@@ -50,6 +50,7 @@ class ThemeController : public QObject {
     Q_PROPERTY(QString mode READ mode NOTIFY modeChanged)
     Q_PROPERTY(QStringList themeNames READ themeNames NOTIFY themesChanged)
     Q_PROPERTY(QString warning READ warning NOTIFY warningChanged)
+    Q_PROPERTY(QString themesFolder READ themesFolder CONSTANT)
 
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(int fontXs READ fontXs NOTIFY scaleChanged)
@@ -111,6 +112,10 @@ public:
     QString warning() const { return m_warning; }
     // Re-reads the custom theme list (after an import or removal).
     Q_INVOKABLE void refreshThemes();
+    // Where custom themes live (<config>/themes); empty without a library.
+    QString themesFolder() const;
+    // Opens the themes folder in the system file manager (creating it first).
+    Q_INVOKABLE void openThemesFolder() const;
     // Imports a palette JSON into the custom theme library and switches to it.
     // Returns {ok, name, warnings: [..], error}.
     Q_INVOKABLE QVariantMap importTheme(const QUrl& file);

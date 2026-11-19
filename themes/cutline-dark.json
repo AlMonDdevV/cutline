@@ -1,0 +1,44 @@
+{
+  "format": "cutline.theme",
+  "version": 1,
+  "name": "CUTLINE Dark",
+  "author": "CUTLINE",
+  "description": "The default theme: neutral dark greys with a red accent.",
+  "colors": {
+    "window": "#141414",
+    "panel": "#1C1C1C",
+    "panelRaised": "#232323",
+    "field": "#2A2A2A",
+    "divider": "#333333",
+    "hover": "#2C2C2C",
+    "pressed": "#353535",
+    "selection": "#40E5484D",
+    "viewerSurround": "#262626",
+    "text": "#E6E6E6",
+    "textMuted": "#A0A0A0",
+    "textDisabled": "#6A6A6A",
+    "textOnAccent": "#141414",
+    "timecodeDim": "#5A5A5A",
+    "accent": "#E5484D",
+    "accentHover": "#EC6166",
+    "focusRing": "#E5484D",
+    "icon": "#A0A0A0",
+    "clipVideo": "#3D6EA8",
+    "clipAudio": "#3E8E5A",
+    "clipTitle": "#B9A27A",
+    "clipGenerator": "#7E66B8",
+    "playhead": "#E5484D",
+    "waveform": "#3E8E5A",
+    "danger": "#FF6B6B",
+    "warning": "#E8A33D",
+    "success": "#46A758"
+  },
+  "fonts": {
+    "ui": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "metrics": {
+    "radius": 3,
+    "density": 1.0
+  }
+}

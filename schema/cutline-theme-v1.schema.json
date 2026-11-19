@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AlMonDdevV/cutline/blob/main/schema/cutline-theme-v1.schema.json",
+  "title": "CUTLINE theme (version 1)",
+  "description": "A CUTLINE theme file. With \"base\", every colour, font and metric is optional and inherits from the built-in Dark or Light theme. Without \"base\", every required colour must be present.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "name"
+  ],
+  "properties": {
+    "format": {
+      "const": "cutline.theme",
+      "title": "Format",
+      "description": "Always \"cutline.theme\"."
+    },
+    "version": {
+      "const": 1,
+      "title": "Format version",
+      "description": "Theme format version. This schema is version 1."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[^\\\\/:*?\"<>|\\u0000-\\u001f]+$",
+      "not": {
+        "pattern": "^\\s*([Dd][Aa][Rr][Kk]|[Ll][Ii][Gg][Hh][Tt]|[Mm][Aa][Tt][Cc][Hh] [Ss][Yy][Ss][Tt][Ee][Mm])\\s*$"
+      },
+      "title": "Name",
+      "description": "1-40 characters. Can't contain \\ / : * ? \" < > | or control characters, and can't be \"Dark\", \"Light\" or \"Match System\" (any capitalisation)."
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 60,
+      "pattern": "^[^\\u0000-\\u001f<>]*$",
+      "title": "Author",
+      "description": "Who made the theme."
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200,
+      "pattern": "^[^\\u0000-\\u001f<>]*$",
+      "title": "Description",
+      "description": "One or two sentences."
+    },
+    "base": {
+      "enum": [
+        "dark",
+        "light"
+      ],
+      "title": "Base theme",
+      "description": "Built-in theme to inherit every value you leave out from."
+    },
+    "colors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "window": {
+          "$ref": "#/$defs/colour",
+          "title": "Window background",
+          "description": "Behind all panels and in the gaps between them.",
+          "x-group": "surfaces"
+        },
+        "panel": {
+          "$ref": "#/$defs/colour",
+          "title": "Panel background",
+          "description": "The main background of every panel.",
+          "x-group": "surfaces"
+        },
+        "panelRaised": {
+          "$ref": "#/$defs/colour",
+          "title": "Raised surface",
+          "description": "Menus, headers, tab strips, toolbars and track headers.",
+          "x-group": "surfaces"
+        },
+        "field": {
+          "$ref": "#/$defs/colour",
+          "title": "Field",
+          "description": "Text fields, drop-downs and buttons.",
+          "x-group": "surfaces"
+        },
+        "divider": {
+          "$ref": "#/$defs/colour",
+          "title": "Divider",
+          "description": "The 1px lines between panels and rows.",
+          "x-group": "surfaces"
+        },
+        "hover": {
+          "$ref": "#/$defs/colour",
+          "title": "Hover",
+          "description": "Background under the mouse pointer.",
+          "x-group": "surfaces"
+        },
+        "pressed": {
+          "$ref": "#/$defs/colour",
+          "title": "Pressed",
+          "description": "Background of pressed or switched-on controls.",
+          "x-group": "surfaces"
+        },
+        "selection": {
+          "$ref": "#/$defs/colour",
+          "title": "Selection",
+          "description": "Selected rows and selected text. Usually the accent with transparency (#AARRGGBB).",
+          "x-group": "surfaces"
+        },
+        "viewerSurround": {
+          "$ref": "#/$defs/colour",
+          "title": "Viewer surround",
+          "description": "Around the video in the viewer. Keep it a dark neutral grey so colours are judged correctly.",
+          "x-group": "surfaces"
+        },
+        "text": {
+          "$ref": "#/$defs/colour",
+          "title": "Text",
+          "description": "Main text.",
+          "x-group": "text"
+        },
+        "textMuted": {
+          "$ref": "#/$defs/colour",
+          "title": "Muted text",
+          "description": "Labels, secondary text and inactive tabs.",
+          "x-group": "text"
+        },
+        "textDisabled": {
+          "$ref": "#/$defs/colour",
+          "title": "Disabled text",
+          "description": "Text on disabled controls.",
+          "x-group": "text"
+        },
+        "textOnAccent": {
+          "$ref": "#/$defs/colour",
+          "title": "Text on accent",
+          "description": "Text drawn on top of the accent colour.",
+          "x-group": "text"
+        },
+        "timecodeDim": {
+          "$ref": "#/$defs/colour",
+          "title": "Timecode leading zeros",
+          "description": "The dimmed leading zeros in timecode displays.",
+          "x-group": "text"
+        },
+        "accent": {
+          "$ref": "#/$defs/colour",
+          "title": "Accent",
+          "description": "Selection marks, the active tab, focus and the logo's cut line.",
+          "x-group": "accent"
+        },
+        "accentHover": {
+          "$ref": "#/$defs/colour",
+          "title": "Accent hover",
+          "description": "The accent under the mouse pointer.",
+          "x-group": "accent"
+        },
+        "focusRing": {
+          "$ref": "#/$defs/colour",
+          "title": "Focus ring",
+          "description": "Keyboard focus outlines and the focused panel's top line.",
+          "x-group": "accent"
+        },
+        "icon": {
+          "$ref": "#/$defs/colour",
+          "title": "Icons",
+          "description": "Icon colour on tool buttons. Optional: defaults to Muted text.",
+          "x-group": "accent"
+        },
+        "clipVideo": {
+          "$ref": "#/$defs/colour",
+          "title": "Video",
+          "description": "Video track markers and video clips.",
+          "x-group": "timeline"
+        },
+        "clipAudio": {
+          "$ref": "#/$defs/colour",
+          "title": "Audio",
+          "description": "Audio track markers and audio clips.",
+          "x-group": "timeline"
+        },
+        "clipTitle": {
+          "$ref": "#/$defs/colour",
+          "title": "Titles",
+          "description": "Title and text clips (used from the effects preview onwards).",
+          "x-group": "timeline"
+        },
+        "clipGenerator": {
+          "$ref": "#/$defs/colour",
+          "title": "Generators",
+          "description": "Generated clips such as solid colours (used from the effects preview onwards).",
+          "x-group": "timeline"
+        },
+        "playhead": {
+          "$ref": "#/$defs/colour",
+          "title": "Playhead",
+          "description": "The playhead line and its marker on the ruler. Optional: defaults to Accent.",
+          "x-group": "timeline"
+        },
+        "waveform": {
+          "$ref": "#/$defs/colour",
+          "title": "Waveform",
+          "description": "Audio waveforms inside clips (used from the import preview onwards). Optional: defaults to Audio.",
+          "x-group": "timeline"
+        },
+        "danger": {
+          "$ref": "#/$defs/colour",
+          "title": "Danger",
+          "description": "Errors and destructive actions. Always shown with an icon and words too.",
+          "x-group": "status"
+        },
+        "warning": {
+          "$ref": "#/$defs/colour",
+          "title": "Warning",
+          "description": "Warnings in the status bar and dialogs.",
+          "x-group": "status"
+        },
+        "success": {
+          "$ref": "#/$defs/colour",
+          "title": "Success",
+          "description": "Confirmations.",
+          "x-group": "status"
+        }
+      },
+      "title": "Colours",
+      "description": "#RRGGBB or #AARRGGBB (alpha first) for each token."
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Fonts",
+      "description": "Font family names only (never paths, URLs or font data). If the family isn't installed, CUTLINE uses its bundled Inter / JetBrains Mono.",
+      "properties": {
+        "ui": {
+          "$ref": "#/$defs/fontFamily",
+          "title": "Interface font",
+          "description": "Menus, panels and dialogs. Default: Inter.",
+          "x-group": "typography"
+        },
+        "mono": {
+          "$ref": "#/$defs/fontFamily",
+          "title": "Timecode font",
+          "description": "Timecode and rulers. A monospaced family works best. Default: JetBrains Mono.",
+          "x-group": "typography"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Metrics",
+      "properties": {
+        "radius": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "title": "Corner radius",
+          "description": "Corner radius of buttons, fields and menus in pixels. Default: 3.",
+          "x-group": "layout"
+        },
+        "density": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.25,
+          "title": "Density",
+          "description": "Multiplies spacing and row heights (not text size). 0.8 = compact, 1.25 = roomy. Default: 1.",
+          "x-group": "layout"
+        }
+      }
+    }
+  },
+  "if": {
+    "not": {
+      "required": [
+        "base"
+      ]
+    }
+  },
+  "then": {
+    "required": [
+      "colors"
+    ],
+    "properties": {
+      "colors": {
+        "required": [
+          "window",
+          "panel",
+          "panelRaised",
+          "field",
+          "divider",
+          "hover",
+          "pressed",
+          "selection",
+          "viewerSurround",
+          "text",
+          "textMuted",
+          "textDisabled",
+          "textOnAccent",
+          "timecodeDim",
+          "accent",
+          "accentHover",
+          "focusRing",
+          "clipVideo",
+          "clipAudio",
+          "clipTitle",
+          "clipGenerator",
+          "danger",
+          "warning",
+          "success"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "colour": {
+      "type": "string",
+      "maxLength": 9,
+      "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "fontFamily": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 _-]{0,63}$"
+    }
+  }
+}

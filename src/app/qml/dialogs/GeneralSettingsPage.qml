@@ -31,6 +31,12 @@ Column {
         spacing: Theme.space2
         CButton { text: qsTr("Import Theme…"); onClicked: page.importThemeRequested() }
         CButton { text: qsTr("Export Current Theme…"); onClicked: page.exportThemeRequested() }
+        CButton {
+            text: qsTr("Open Themes Folder")
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("Edit a theme file here and CUTLINE updates as you save.")
+            onClicked: Theme.openThemesFolder()
+        }
     }
     Text {
         x: Theme.space3
