@@ -1,0 +1,16 @@
+# Build output
+build/
+out/
+screens/
+
+# IDE and tooling
+.vs/
+.vscode/
+*.user
+CMakeUserPresets.json
+
+# vcpkg manifest-mode install tree
+vcpkg_installed/
+
+# Agent workspaces (plan ledgers, review packages)
+.superpowers/
