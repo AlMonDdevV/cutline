@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows (MSVC, official)
+    runs-on: windows-latest
+    env:
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read pinned versions
+        id: pins
+        shell: bash
+        run: |
+          echo "qt=$(tr -d '[:space:]' < tooling/qt-version.txt)" >> "$GITHUB_OUTPUT"
+          echo "baseline=$(python -c "import json;print(json.load(open('vcpkg-configuration.json'))['default-registry']['baseline'])")" >> "$GITHUB_OUTPUT"
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ steps.pins.outputs.qt }}
+          arch: win64_msvc2022_64
+          modules: qtshadertools qtimageformats
+          cache: true
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg-cache
+          key: vcpkg-windows-${{ steps.pins.outputs.baseline }}-${{ hashFiles('vcpkg.json') }}
+
+      - name: Set up vcpkg at the pinned baseline
+        shell: pwsh
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$env:RUNNER_TEMP\vcpkg"
+          git -C "$env:RUNNER_TEMP\vcpkg" checkout ${{ steps.pins.outputs.baseline }}
+          & "$env:RUNNER_TEMP\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
+          New-Item -ItemType Directory -Force .vcpkg-cache | Out-Null
+          "VCPKG_ROOT=$env:RUNNER_TEMP\vcpkg" >> $env:GITHUB_ENV
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake --preset windows-msvc -DCUTLINE_WERROR=ON
+      - name: Build
+        run: cmake --build --preset windows-msvc
+      - name: Test
+        run: ctest --preset windows-msvc
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-test-logs
+          path: build/windows-msvc/Testing/Temporary/
+
+  macos:
+    name: macOS (Apple Silicon, official)
+    runs-on: macos-latest
+    env:
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read pinned versions
+        id: pins
+        run: |
+          echo "qt=$(tr -d '[:space:]' < tooling/qt-version.txt)" >> "$GITHUB_OUTPUT"
+          echo "baseline=$(python3 -c "import json;print(json.load(open('vcpkg-configuration.json'))['default-registry']['baseline'])")" >> "$GITHUB_OUTPUT"
+
+      - name: Install build tools
+        run: brew install ninja pkg-config nasm
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ steps.pins.outputs.qt }}
+          arch: clang_64
+          modules: qtshadertools qtimageformats
+          cache: true
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg-cache
+          key: vcpkg-macos-${{ steps.pins.outputs.baseline }}-${{ hashFiles('vcpkg.json') }}
+
+      - name: Set up vcpkg at the pinned baseline
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$RUNNER_TEMP/vcpkg"
+          git -C "$RUNNER_TEMP/vcpkg" checkout ${{ steps.pins.outputs.baseline }}
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+          mkdir -p .vcpkg-cache
+          echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake --preset macos -DCUTLINE_WERROR=ON
+      - name: Build
+        run: cmake --build --preset macos
+      - name: Test
+        run: ctest --preset macos
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-logs
+          path: build/macos/Testing/Temporary/
+
+  linux:
+    name: Linux (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["debian:trixie", "ubuntu:26.04", "fedora:latest", "archlinux:latest"]
+    steps:
+      - name: Install distro packages
+        shell: bash
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*|ubuntu:*)
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                build-essential cmake ninja-build pkg-config git ca-certificates \
+                qt6-base-dev qt6-declarative-dev qt6-svg-dev qt6-shadertools-dev \
+                qml6-module-qtqml qml6-module-qtqml-workerscript qml6-module-qtquick \
+                qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-dialogs \
+                qml6-module-qtquick-templates qml6-module-qtquick-window \
+                libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libswscale-dev \
+                libgl-dev libvulkan-dev libxkbcommon-dev
+              ;;
+            fedora:*)
+              dnf install -y gcc-c++ cmake ninja-build pkgconf-pkg-config git \
+                qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtsvg-devel qt6-qtshadertools-devel \
+                ffmpeg-free-devel mesa-libGL-devel vulkan-headers libxkbcommon-devel
+              ;;
+            archlinux:*)
+              pacman -Syu --noconfirm --needed base-devel cmake ninja pkgconf git \
+                qt6-base qt6-declarative qt6-svg qt6-shadertools ffmpeg vulkan-headers
+              ;;
+          esac
+
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake --preset linux -DCUTLINE_WERROR=ON
+      - name: Build
+        run: cmake --build --preset linux
+      - name: Test
+        run: ctest --preset linux
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-test-logs-${{ strategy.job-index }}
+          path: build/linux/Testing/Temporary/

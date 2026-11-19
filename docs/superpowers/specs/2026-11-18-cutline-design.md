@@ -22,6 +22,27 @@ Success means someone with an ordinary laptop can import phone or camera footage
 music and colour fixes, and export a correct MP4. It should feel like a commercial tool while doing it, and nothing on
 screen should be fake.
 
+**Audience (user, 2026-11-19):** everyone equally: beginners, creators and experienced editors.
+- Defaults are balanced: plain wording, a clean default layout, and pro features one click away.
+- A Simple/Advanced interface level in Settings comes later (M10) for people who want fewer or more panels.
+
+**What people make most (user):** YouTube videos (16:9, 1080p and 4K) and Shorts/TikTok/Reels (vertical 9:16,
+1080×1920). These presets come first everywhere: new sequence, sequence settings and export.
+
+**More product decisions (user, 2026-11-19, second batch):**
+- **First launch: welcome screen plus a guided tour.**
+  - The welcome screen arrives in M2. It has quick-start cards (*YouTube video, 16:9*; *Short / TikTok / Reel, 9:16*;
+    *Open project…*), recent projects, and a "Show this at startup" checkbox.
+  - The guided tour arrives in M10, once every panel it points at works. It is a skippable step-by-step overlay shown
+    once on first launch and again from Help ▸ Take the Tour.
+- **Auto captions in 1.0:** local, offline speech-to-text using whisper.cpp (MIT).
+  - It writes captions onto a subtitle track, with caption styles made for Shorts.
+  - The speech model is a one-time, opt-in download, and audio never leaves the computer.
+  - Built in M9, next to the Claude integration. Claude can also read the transcript through a `get_transcript`
+    tool, when the user allows it.
+- **Claude edits:** ask every time. Every change is a plan the user approves (§15), and it can be loosened per project.
+- **Computers are a real mix:** first launch runs a hardware check (§17) and picks defaults to suit the machine.
+
 ## 2. Goals, non-goals, anti-goals
 
 **Goals (1.0):** everything in the product spec §5–§12 and the full keyboard spec, delivered across the milestones in
@@ -31,7 +52,7 @@ screen should be fake.
 - node-based compositing, motion tracking, stabilisation, multicam, nested sequences
 - HDR grading (HDR sources are shown tone-mapped, with a warning)
 - a third-party plugin SDK (OpenFX later)
-- speech-to-text (a local whisper.cpp transcription tool is the planned follow-up, and pairs well with Claude subtitles)
+- cloud speech-to-text (local auto captions *are* in 1.0, per the user, 2026-11-19)
 - collaboration, cloud sync, mobile versions
 - image sequences and animated GIF import
 - translations (1.0 is English only, but every UI string is wrapped for translation from the start)
@@ -389,8 +410,18 @@ selected clip's current frame, or on a sample frame if nothing is selected. Appl
 **Look.** This follows the reference analysis.
 - Neutral, untinted greys, so the footage is the only colour on screen.
 - Colour shows media kind: video blue, audio green, titles sand, generators violet.
-- **One accent, proposed as Signal Orange `#FF6B1A` (call):** playhead, selection, focus rings, the logo's cut mark.
-  Final values are confirmed with a mockup at the start of M2.
+- **One accent: red, chosen by the user on 2026-11-19 after the mockup.** Dark theme `#E5484D`, light theme `#C62F35`.
+  It marks the playhead, selection, focus rings and the logo's cut mark.
+  - Because the accent is red, error colours never stand alone. Errors always carry the warning icon and words, and
+    destructive buttons are outlined with an icon. Primary buttons are neutral, so a red control never just means
+    "go".
+- **Themes:** the built-in Dark (default) and Light, plus **custom themes**.
+  - A custom theme is a palette JSON in the same format as the built-ins. Settings imports, exports and selects them,
+    and they are stored in `<config>/themes/`.
+  - Importing validates the file. If text contrast falls below WCAG AA or the surfaces aren't neutral grey (which can
+    throw off colour judgement), the user sees a warning but can still use the theme.
+  - Later, a community **theme library** (a public repo of user-submitted themes, browsed and downloaded in-app as an
+    opt-in network connection) makes themes easy to share. There is no built-in Aero theme.
 - 1px dividers, no cards, a 4px spacing grid, 24px inspector rows, and fixed keyframe and reset columns.
 - **Typography:** Inter for the UI, and JetBrains Mono for timecode, with dimmed leading zeros.
 - **Icons:** CUTLINE's own SVG set for editing tools (blade, ripple, roll, slip, slide, snapping, link, etc.), plus
@@ -623,6 +654,24 @@ documented, and checked in a real build on Windows.
 - warm start under 3 s
 - the UI thread never blocks for more than 100 ms, because all I/O happens elsewhere
 
+**Hardware-aware defaults (user: "a real mix" of computers):**
+- On first launch (and from Settings ▸ Performance ▸ Re-check), CUTLINE builds a `HardwareProfile`: GPU adapter
+  and whether it's integrated or discrete, VRAM where reported, RAM, CPU cores, and which hardware decoders and
+  encoders actually open.
+- That puts the machine in a tier:
+  - **Light:** integrated GPU or ≤ 8 GB RAM
+  - **Standard**
+  - **Strong:** discrete GPU and ≥ 16 GB RAM
+- The tier sets the defaults, each of which can be changed:
+
+  | Default | Light | Standard | Strong |
+  |---|---|---|---|
+  | Automatic proxies | above 1080p30 | above 4K30 | off |
+  | Preview quality | ½ | Full | Full |
+  | Frame cache | 15% of RAM | 25% | 25% |
+
+- Preview quality is built in M3, and the tier mapping and proxies in M8.
+
 **Reliability:**
 - **Autosave:** every 2 minutes, to app data, never over the user's file.
 - **Crash recovery:** a session marker plus the autosave lead to a recovery prompt on the next launch.
@@ -631,10 +680,12 @@ documented, and checked in a real build on Windows.
 - **Background work** can be cancelled throughout.
 
 **Privacy and security:**
-- `docs/network.md` lists every connection, and there are exactly three, all opt-in:
+- `docs/network.md` lists every connection, and there are exactly four, all opt-in:
   1. the Anthropic API when in-app Claude is enabled
   2. the Cisco OpenH264 download when clicked
   3. an update check against GitHub Releases, off by default
+  4. the speech-model download for auto captions, when clicked
+  - The community theme library (after 1.0) will add a fifth, also opt-in.
 - No telemetry.
 - Source media is opened read-only.
 - Temporary files go in a per-app temp folder with random names and are cleaned at start and exit.
@@ -685,8 +736,10 @@ adds controls that don't work; unfinished areas show honest empty states.
 | 6 | **Effects**: transform/crop/opacity with keyframes and viewer handles, colour, blur/sharpen, chroma key, transitions, titles, speed/reverse, audio gain/fades/EQ, effects browser with live thumbnails, scopes | every effect matches in export, proven by tests |
 | 7 | **Export engine**: queue, presets, encoder detection, H.264/H.265/AV1/ProRes, MP4/MOV, all settings, verification, cancel, errors, OpenH264 opt-in | reliable exports on every encoder this PC has |
 | 8 | **Project management**: autosave, recovery, backups, missing media + relink, project settings, proxies | projects survive crashes and moved footage |
-| 9 | **Claude**: control server, cutline-mcp, permissions, edit plans, tools, setup helper, optional API-key mode, docs | Claude can propose an edit and the user can apply or undo it |
-| 10 | **Polish and release**: performance pass against §17 targets, accessibility pass, drag-and-drop docking, installers for every platform, user guide, real screenshots and release info handed to the website | CUTLINE 1.0 release candidate |
+| 9 | **Claude and captions**: control server, cutline-mcp, permissions, edit plans, tools, setup helper, optional API-key mode, docs; local auto captions (whisper.cpp, opt-in model download), Shorts caption styles, `get_transcript` | Claude can propose an edit and the user can apply or undo it; one click captions a clip offline |
+| 10 | **Polish and release**: performance pass against §17 targets, accessibility pass, drag-and-drop docking, Simple/Advanced interface level, installers for every platform, user guide, real screenshots and release info handed to the website | CUTLINE 1.0 release candidate |
+
+After 1.0: a community theme library, and the other non-goals in §2.
 
 A basic export comes in M4, earlier than the spec's order, so the shared render path is proven before effects are
 built on it. M7 is then the full export engine. The shortcut system starts in M2 because menus and tooltips depend on
@@ -706,7 +759,8 @@ These were decided by Claude under the user's instruction to choose the recommen
 7. No SQLite in 1.0.
 8. Audio output through miniaudio.
 9. Workspaces are named Edit, Colour, Audio, Deliver.
-10. The accent is Signal Orange `#FF6B1A`, pending the M2 mockup.
+10. The accent is red (`#E5484D` dark / `#C62F35` light), chosen by the user. Custom themes are in; a community theme
+    library comes later.
 11. Fonts: Inter and JetBrains Mono. Icons: a custom editing set plus restyled Phosphor.
 12. Tab/F6/Ctrl+Tab panel focus, the Escape stack, digit-row matching and macOS mappings (§14).
 13. The Claude integration is off by default, with per-project permissions; file paths and media content are hidden
