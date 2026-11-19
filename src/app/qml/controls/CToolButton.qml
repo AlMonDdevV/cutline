@@ -7,7 +7,7 @@ ToolButton {
     id: control
 
     property string iconName: ""
-    property color iconColor: checked ? Theme.text : Theme.textMuted
+    property color iconColor: checked ? Theme.text : Theme.icon
     property string tip: ""
 
     font.family: Theme.uiFont

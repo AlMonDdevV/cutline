@@ -1,3 +1,4 @@
+#include "app/theme/Fonts.h"
 #include "app/theme/Palette.h"
 #include "app/theme/ThemeController.h"
 #include "app/theme/ThemeLibrary.h"
@@ -136,6 +137,84 @@ private slots:
         theme.setMode(u"custom:Nope"_s);
         QCOMPARE(theme.panel(), QColor(u"#1C1C1C"_s));
         QVERIFY(!theme.warning().isEmpty());
+    }
+    void baseInheritance() {
+        const auto r = parsePalette("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Blue\",\"base\":\"dark\",\"colors\":{\"accent\":\"#3399FF\"}}");
+        QVERIFY2(r.ok(), r.ok() ? "" : qPrintable(r.error().message));
+        QCOMPARE(r.value().color(u"accent"_s), QColor(u"#3399FF"_s));
+        QCOMPARE(r.value().color(u"panel"_s), QColor(u"#1C1C1C"_s));
+        QCOMPARE(r.value().color(u"playhead"_s), QColor(u"#3399FF"_s)); // defaults to the accent
+    }
+
+    void newerThemeVersionRefused() {
+        const auto r = parsePalette("{\"format\":\"cutline.theme\",\"version\":2,\"name\":\"Future\",\"base\":\"dark\",\"colors\":{}}");
+        QVERIFY(!r.ok());
+        QCOMPARE(r.error().message, u"“Future” was made for a newer version of CUTLINE."_s);
+    }
+
+    void unknownBaseRejected() {
+        const auto r = parsePalette("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"X\",\"base\":\"sepia\",\"colors\":{}}");
+        QVERIFY(!r.ok());
+        QCOMPARE(r.error().message, u"Theme \"X\": base must be \"dark\" or \"light\"."_s);
+    }
+
+    void fontsAndMetricsParsed() {
+        const auto r = parsePalette("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Roomy\",\"base\":\"light\",             \"fonts\":{\"ui\":\"JetBrains Mono\",\"mono\":\"Inter\"},\"metrics\":{\"radius\":6,\"density\":1.1}}");
+        QVERIFY2(r.ok(), r.ok() ? "" : qPrintable(r.error().message));
+        QCOMPARE(r.value().uiFont, u"JetBrains Mono"_s);
+        QCOMPARE(r.value().monoFont, u"Inter"_s);
+        QCOMPARE(r.value().radius, 6);
+        QCOMPARE(r.value().density, 1.1);
+    }
+
+    void metricsOutOfRangeRejected() {
+        const auto r = parsePalette("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Big\",\"base\":\"dark\",\"metrics\":{\"radius\":40}}");
+        QVERIFY(!r.ok());
+        QCOMPARE(r.error().message, u"Theme \"Big\": radius must be between 0 and 16."_s);
+        const auto d = parsePalette("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Big\",\"base\":\"dark\",\"metrics\":{\"density\":3}}");
+        QVERIFY(!d.ok());
+        QCOMPARE(d.error().message, u"Theme \"Big\": density must be between 0.8 and 1.25."_s);
+    }
+
+    void optionalTokensDefault() {
+        const auto r = parsePalette(readResource(u":/cutline/theme/dark.json"_s));
+        QVERIFY(r.ok());
+        QCOMPARE(r.value().color(u"playhead"_s), r.value().color(u"accent"_s));
+        QCOMPARE(r.value().color(u"waveform"_s), r.value().color(u"clipAudio"_s));
+        QCOMPARE(r.value().color(u"icon"_s), r.value().color(u"textMuted"_s));
+    }
+
+    void controllerAppliesFontsAndMetrics() {
+        loadBundledFonts();
+        QTemporaryDir lib, src;
+        const QString path = src.path() + u"/roomy.json"_s;
+        QFile f(path);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Roomy\",\"base\":\"dark\",\"fonts\":{\"ui\":\"JetBrains Mono\"},\"metrics\":{\"radius\":6,\"density\":1.25}}");
+        f.close();
+        ThemeLibrary library(lib.path());
+        QVERIFY(library.importFrom(path).ok());
+        ThemeController theme(u"custom:Roomy"_s, 1.0, &library);
+        QCOMPARE(theme.uiFont(), u"JetBrains Mono"_s);
+        QCOMPARE(theme.monoFont(), u"JetBrains Mono"_s); // not set: default
+        QCOMPARE(theme.radius(), 6);
+        QCOMPARE(theme.rowHeight(), qRound(24 * 1.25));
+        theme.setMode(u"dark"_s);
+        QCOMPARE(theme.uiFont(), u"Inter"_s);
+        QCOMPARE(theme.radius(), 3);
+    }
+
+    void liveReloadOnFileChange() {
+        QTemporaryDir lib, src;
+        ThemeLibrary library(lib.path());
+        QVERIFY(library.importFrom(writeTheme(src.path(), u"Live"_s)).ok());
+        ThemeController theme(u"custom:Live"_s, 1.0, &library);
+        QCOMPARE(theme.panel(), QColor(u"#1C1C1C"_s));
+        QFile f(library.filePath(u"Live"_s));
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        f.write("{\"format\":\"cutline.theme\",\"version\":1,\"name\":\"Live\",\"base\":\"dark\",\"colors\":{\"panel\":\"#202020\"}}");
+        f.close();
+        QTRY_COMPARE(theme.panel(), QColor(u"#202020"_s));
     }
 };
 

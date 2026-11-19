@@ -73,7 +73,7 @@ PanelFrame {
                 onPaint: {
                     const ctx = getContext("2d")
                     ctx.reset()
-                    ctx.fillStyle = Theme.accent
+                    ctx.fillStyle = Theme.playhead
                     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(12, 0); ctx.lineTo(6, 8); ctx.closePath(); ctx.fill()
                 }
                 Connections { target: Theme; function onPaletteChanged() { playheadHead.requestPaint() } }
@@ -153,7 +153,7 @@ PanelFrame {
         anchors.top: top.bottom
         anchors.bottom: parent.bottom
         width: 1
-        color: Theme.accent
+        color: Theme.playhead
     }
 
     CMenu {

@@ -3,6 +3,7 @@
 #include "app/theme/Palette.h"
 
 #include <QColor>
+#include <QFileSystemWatcher>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -41,6 +42,9 @@ class ThemeController : public QObject {
     Q_PROPERTY(QColor warningColor READ warningColor NOTIFY paletteChanged)
     Q_PROPERTY(QColor success READ success NOTIFY paletteChanged)
     Q_PROPERTY(QColor timecodeDim READ timecodeDim NOTIFY paletteChanged)
+    Q_PROPERTY(QColor playhead READ playhead NOTIFY paletteChanged)
+    Q_PROPERTY(QColor waveform READ waveform NOTIFY paletteChanged)
+    Q_PROPERTY(QColor icon READ icon NOTIFY paletteChanged)
     Q_PROPERTY(bool dark READ dark NOTIFY paletteChanged)
 
     Q_PROPERTY(QString mode READ mode NOTIFY modeChanged)
@@ -54,16 +58,16 @@ class ThemeController : public QObject {
     Q_PROPERTY(int fontLg READ fontLg NOTIFY scaleChanged)
     Q_PROPERTY(int fontXl READ fontXl NOTIFY scaleChanged)
     Q_PROPERTY(int fontTimecode READ fontTimecode NOTIFY scaleChanged)
-    Q_PROPERTY(int space1 READ space1 NOTIFY scaleChanged)
-    Q_PROPERTY(int space2 READ space2 NOTIFY scaleChanged)
-    Q_PROPERTY(int space3 READ space3 NOTIFY scaleChanged)
-    Q_PROPERTY(int space4 READ space4 NOTIFY scaleChanged)
-    Q_PROPERTY(int space6 READ space6 NOTIFY scaleChanged)
-    Q_PROPERTY(int rowHeight READ rowHeight NOTIFY scaleChanged)
-    Q_PROPERTY(int headerHeight READ headerHeight NOTIFY scaleChanged)
-    Q_PROPERTY(int radius READ radius CONSTANT)
-    Q_PROPERTY(QString uiFont READ uiFont CONSTANT)
-    Q_PROPERTY(QString monoFont READ monoFont CONSTANT)
+    Q_PROPERTY(int space1 READ space1 NOTIFY metricsChanged)
+    Q_PROPERTY(int space2 READ space2 NOTIFY metricsChanged)
+    Q_PROPERTY(int space3 READ space3 NOTIFY metricsChanged)
+    Q_PROPERTY(int space4 READ space4 NOTIFY metricsChanged)
+    Q_PROPERTY(int space6 READ space6 NOTIFY metricsChanged)
+    Q_PROPERTY(int rowHeight READ rowHeight NOTIFY metricsChanged)
+    Q_PROPERTY(int headerHeight READ headerHeight NOTIFY metricsChanged)
+    Q_PROPERTY(int radius READ radius NOTIFY paletteChanged)
+    Q_PROPERTY(QString uiFont READ uiFont NOTIFY paletteChanged)
+    Q_PROPERTY(QString monoFont READ monoFont NOTIFY paletteChanged)
 
 public:
     // `library` may be null (no custom themes). Mode: "dark" | "light" | "system" | "custom:<name>".
@@ -96,6 +100,9 @@ public:
     QColor warningColor() const { return c("warning"); }
     QColor success() const { return c("success"); }
     QColor timecodeDim() const { return c("timecodeDim"); }
+    QColor playhead() const { return c("playhead"); }
+    QColor waveform() const { return c("waveform"); }
+    QColor icon() const { return c("icon"); }
     bool dark() const;
 
     QString mode() const { return m_mode; }
@@ -118,16 +125,16 @@ public:
     int fontLg() const { return s(15); }
     int fontXl() const { return s(20); }
     int fontTimecode() const { return s(22); }
-    int space1() const { return s(4); }
-    int space2() const { return s(8); }
-    int space3() const { return s(12); }
-    int space4() const { return s(16); }
-    int space6() const { return s(24); }
-    int rowHeight() const { return s(24); }
-    int headerHeight() const { return s(32); }
-    int radius() const { return 3; }
-    QString uiFont() const { return QStringLiteral("Inter"); }
-    QString monoFont() const { return QStringLiteral("JetBrains Mono"); }
+    int space1() const { return d(4); }
+    int space2() const { return d(8); }
+    int space3() const { return d(12); }
+    int space4() const { return d(16); }
+    int space6() const { return d(24); }
+    int rowHeight() const { return d(24); }
+    int headerHeight() const { return d(32); }
+    int radius() const { return m_palette.radius; }
+    QString uiFont() const;
+    QString monoFont() const;
 
     static Palette builtinPalette(const QString& name); // "dark" or "light"
 
@@ -137,10 +144,14 @@ signals:
     void themesChanged();
     void warningChanged();
     void scaleChanged();
+    void metricsChanged();
 
 private:
     QColor c(const char* key) const { return m_palette.color(QLatin1String(key)); }
-    int s(int base) const { return qRound(base * m_scale); }
+    int s(int base) const { return qRound(base * m_scale); }                      // type: interface scale
+    int d(int base) const { return qRound(base * m_scale * m_palette.density); } // spacing: scale x theme density
+    void watchCurrent();
+    void reloadCurrent();
     void applySystemScheme();
     void setPalette(const Palette& palette);
     void setWarning(const QString& warning);
@@ -150,6 +161,7 @@ private:
     QString m_mode;
     QString m_warning;
     qreal m_scale = 1.0;
+    QFileSystemWatcher m_watcher;
 };
 
 } // namespace cutline

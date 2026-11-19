@@ -24,8 +24,9 @@ public:
     // Names a custom theme may never take.
     static const QStringList& reservedNames();
 
+    QString filePath(const QString& name) const;
+
 private:
-    QString fileFor(const QString& name) const;
     QString m_directory;
 };
 

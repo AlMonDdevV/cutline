@@ -22,15 +22,35 @@ inline const QStringList kPaletteKeys = {
     QStringLiteral("warning"),      QStringLiteral("success"),        QStringLiteral("timecodeDim"),
 };
 
+// Optional colour tokens: when a theme leaves them out they follow another token
+// (playhead -> accent, waveform -> clipAudio, icon -> textMuted).
+inline const QStringList kOptionalPaletteKeys = {QStringLiteral("playhead"), QStringLiteral("waveform"),
+                                                 QStringLiteral("icon")};
+
+// A complete, resolved theme. Files may inherit from a built-in base and override only some values.
 struct Palette {
     QString name;
-    QHash<QString, QColor> colors;
+    QString author;
+    QString description;
+    QHash<QString, QColor> colors; // every key in kPaletteKeys and kOptionalPaletteKeys
+    QString uiFont;                // empty = Inter
+    QString monoFont;              // empty = JetBrains Mono
+    int radius = 3;                // corner radius in px, 0-16
+    double density = 1.0;          // spacing and row-height multiplier, 0.8-1.25
 
     QColor color(const QString& key) const { return colors.value(key); }
     friend bool operator==(const Palette&, const Palette&) = default;
 };
 
-// {"name": "...", "colors": {"<key>": "#rrggbb" | "#aarrggbb", ...}} with every key in kPaletteKeys.
+inline constexpr int kThemeFormatVersion = 1;
+
+// The built-in "dark" or "light" palette from the app's resources.
+Palette builtinPalette(const QString& name);
+
+// The theme file format (docs/themes.md, schema/cutline-theme-v1.schema.json):
+// {"format":"cutline.theme","version":1,"name":...,"base":"dark"|"light","author":...,"description":...,
+//  "colors":{token:"#rrggbb"|"#aarrggbb"},"fonts":{"ui":...,"mono":...},"metrics":{"radius":0-16,"density":0.8-1.25}}
+// Without "base", every key in kPaletteKeys is required. "format" may be omitted (older files).
 Result<Palette> parsePalette(const QByteArray& json);
 QByteArray serializePalette(const Palette& palette);
 

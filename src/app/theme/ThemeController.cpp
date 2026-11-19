@@ -3,6 +3,8 @@
 #include "app/theme/ThemeLibrary.h"
 
 #include <QFile>
+#include <QFileInfo>
+#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QStyleHints>
 
@@ -20,22 +22,7 @@ double luminance(const QColor& c) {
 
 } // namespace
 
-Palette ThemeController::builtinPalette(const QString& name) {
-    QFile file(QStringLiteral(":/cutline/theme/%1.json").arg(name));
-    if (file.open(QIODevice::ReadOnly)) {
-        auto parsed = parsePalette(file.readAll());
-        if (parsed.ok())
-            return parsed.value();
-        Q_ASSERT_X(false, "ThemeController", qPrintable(parsed.error().message));
-    }
-    Q_ASSERT_X(false, "ThemeController", "built-in palette missing from resources");
-    // Release fallback: neutral greys so the UI stays usable.
-    Palette fallback;
-    fallback.name = name;
-    for (const QString& key : kPaletteKeys)
-        fallback.colors.insert(key, key.startsWith(QLatin1String("text")) ? QColor(0xE6, 0xE6, 0xE6) : QColor(0x1C, 0x1C, 0x1C));
-    return fallback;
-}
+Palette ThemeController::builtinPalette(const QString& name) { return cutline::builtinPalette(name); }
 
 ThemeController::ThemeController(const QString& mode, qreal scale, ThemeLibrary* library, QObject* parent)
     : QObject(parent), m_library(library), m_scale(std::clamp(scale, 0.9, 1.5)) {
@@ -45,7 +32,54 @@ ThemeController::ThemeController(const QString& mode, qreal scale, ThemeLibrary*
                 applySystemScheme();
         });
     }
+    connect(&m_watcher, &QFileSystemWatcher::fileChanged, this, &ThemeController::reloadCurrent);
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this] {
+        emit themesChanged();
+        reloadCurrent(); // editors that save by replacing the file show up as a directory change
+    });
+    connect(this, &ThemeController::paletteChanged, this, &ThemeController::metricsChanged);
+    connect(this, &ThemeController::scaleChanged, this, &ThemeController::metricsChanged);
     setMode(mode);
+}
+
+QString ThemeController::uiFont() const {
+    const QString wanted = m_palette.uiFont;
+    return !wanted.isEmpty() && QFontDatabase::families().contains(wanted) ? wanted : QStringLiteral("Inter");
+}
+
+QString ThemeController::monoFont() const {
+    const QString wanted = m_palette.monoFont;
+    return !wanted.isEmpty() && QFontDatabase::families().contains(wanted) ? wanted : QStringLiteral("JetBrains Mono");
+}
+
+void ThemeController::watchCurrent() {
+    if (!m_watcher.files().isEmpty())
+        m_watcher.removePaths(m_watcher.files());
+    if (!m_library)
+        return;
+    if (!m_library->directory().isEmpty() && QFileInfo::exists(m_library->directory()) &&
+        !m_watcher.directories().contains(m_library->directory()))
+        m_watcher.addPath(m_library->directory());
+    if (m_mode.startsWith(kCustomPrefix)) {
+        const QString path = m_library->filePath(m_mode.mid(kCustomPrefix.size()));
+        if (QFileInfo::exists(path))
+            m_watcher.addPath(path);
+    }
+}
+
+// Live reload while someone edits their theme file: keep the last good palette if the file is mid-edit/broken.
+void ThemeController::reloadCurrent() {
+    if (!m_library || !m_mode.startsWith(kCustomPrefix))
+        return;
+    const QString name = m_mode.mid(kCustomPrefix.size());
+    auto loaded = m_library->load(name);
+    if (loaded.ok()) {
+        setWarning({});
+        setPalette(loaded.value());
+    } else if (QFileInfo::exists(m_library->filePath(name))) {
+        setWarning(QStringLiteral("“%1” has an error: %2").arg(name, loaded.error().message));
+    }
+    watchCurrent();
 }
 
 bool ThemeController::dark() const { return luminance(panel()) < 0.2; }
@@ -98,6 +132,7 @@ void ThemeController::setMode(const QString& mode) {
         m_mode = effective;
         emit modeChanged();
     }
+    watchCurrent();
 }
 
 QStringList ThemeController::themeNames() const {

@@ -31,7 +31,7 @@ const QStringList& ThemeLibrary::reservedNames() {
     return names;
 }
 
-QString ThemeLibrary::fileFor(const QString& name) const { return QDir(m_directory).filePath(name + QStringLiteral(".json")); }
+QString ThemeLibrary::filePath(const QString& name) const { return QDir(m_directory).filePath(name + QStringLiteral(".json")); }
 
 QStringList ThemeLibrary::customNames() const {
     QStringList names;
@@ -42,7 +42,7 @@ QStringList ThemeLibrary::customNames() const {
 }
 
 Result<Palette> ThemeLibrary::load(const QString& name) const {
-    QFile file(fileFor(name));
+    QFile file(filePath(name));
     if (!file.open(QIODevice::ReadOnly))
         return Error{Error::Code::Io, QStringLiteral("The theme “%1” couldn't be found.").arg(name)};
     return parsePalette(file.readAll());
@@ -70,7 +70,7 @@ Result<ThemeCheck> ThemeLibrary::importFrom(const QString& path) {
     QDir().mkpath(m_directory);
     Palette stored = palette;
     stored.name = name;
-    if (const Status saved = writeAtomically(fileFor(name), serializePalette(stored)); !saved)
+    if (const Status saved = writeAtomically(filePath(name), serializePalette(stored)); !saved)
         return Error{Error::Code::Io, saved.message};
     return checkPalette(stored);
 }
@@ -80,7 +80,7 @@ Status ThemeLibrary::exportTo(const Palette& palette, const QString& path) const
 }
 
 Status ThemeLibrary::remove(const QString& name) {
-    QFile file(fileFor(name));
+    QFile file(filePath(name));
     if (!file.exists())
         return Status::failure(QStringLiteral("That theme no longer exists."));
     if (!file.remove())
