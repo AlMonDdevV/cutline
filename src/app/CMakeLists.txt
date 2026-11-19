@@ -1,4 +1,11 @@
+add_library(cutline_ico STATIC icons/IcoWriter.h icons/IcoWriter.cpp)
+target_include_directories(cutline_ico PUBLIC "${PROJECT_SOURCE_DIR}/src")
+target_link_libraries(cutline_ico PUBLIC Qt6::Gui)
+cutline_set_warnings(cutline_ico)
+
 qt_add_library(cutline_ui STATIC
+    icons/IconProvider.h
+    icons/IconProvider.cpp
     theme/Palette.h
     theme/Palette.cpp
     theme/ThemeLibrary.h
@@ -24,6 +31,13 @@ qt_add_resources(cutline_ui "cutline_theme"
         theme/light.json
 )
 
+file(GLOB _icon_svgs RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/icons/svg/*.svg")
+qt_add_resources(cutline_ui "cutline_icons"
+    PREFIX "/cutline/icons"
+    BASE icons/svg
+    FILES ${_icon_svgs}
+)
+
 set(_fonts_dir "${PROJECT_SOURCE_DIR}/resources/fonts")
 qt_add_resources(cutline_ui "cutline_fonts"
     PREFIX "/cutline/fonts"
@@ -43,6 +57,8 @@ target_link_libraries(cutline_ui
         Qt6::Gui
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Svg
+        cutline_ico
 )
 cutline_set_warnings(cutline_ui)
 

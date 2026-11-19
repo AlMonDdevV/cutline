@@ -26,6 +26,7 @@ include(CutlineTesting)
 add_subdirectory(src/core)
 add_subdirectory(src/media)
 add_subdirectory(src/app)
+add_subdirectory(tools/iconbake)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
