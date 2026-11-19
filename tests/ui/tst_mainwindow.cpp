@@ -15,6 +15,7 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QJSValue>
 #include <QTemporaryDir>
 #include <QtQml/qqmlextensionplugin.h>
 #include <QtTest>
@@ -364,6 +365,94 @@ private slots:
         QTest::keyClick(window, Qt::Key_Space);
         QCOMPARE(hits, 0);
         QCOMPARE(search->property("text").toString(), u"s "_s);
+    }
+
+    // ---- Final-review fixes ----
+
+    void settingsFitsAtLargeScale() {
+        launch();
+        window->resize(1366, 768);
+        services->theme().setScale(1.5);
+        QObject* settings = openKeyboardPage();
+        QVERIFY(settings);
+        auto* popup = qobject_cast<QObject*>(settings);
+        QTRY_VERIFY(popup->property("height").toReal() <= window->height());
+        QVERIFY(popup->property("width").toReal() <= window->width());
+        QQuickItem* title = nullptr;
+        QQuickItem* keys = nullptr;
+        QTRY_VERIFY((title = item(u"keyboard.row.file.save.title"_s)) && (keys = item(u"keyboard.row.file.save.keys"_s)));
+        const qreal titleRight = title->mapToItem(nullptr, QPointF(title->width(), 0)).x();
+        const qreal keysLeft = keys->mapToItem(nullptr, QPointF(0, 0)).x();
+        QVERIFY2(titleRight <= keysLeft + 0.5, qPrintable(u"title ends at %1, keys start at %2"_s.arg(titleRight).arg(keysLeft)));
+        QVERIFY(title->width() >= 80);
+    }
+
+    void longProjectNameDoesNotOverlapPicker() {
+        launch();
+        window->resize(1366, 768);
+        services->theme().setScale(1.5);
+        QVERIFY(services->project().setProjectName(u"Paris trip vlog — episode 3 final cut, colour pass two"_s));
+        QQuickItem* name = item(u"header.projectName"_s);
+        QQuickItem* picker = item(u"header.workspacePicker"_s);
+        QVERIFY(name && picker);
+        QTest::qWait(50);
+        const qreal nameRight = name->mapToItem(nullptr, QPointF(name->width(), 0)).x();
+        const qreal pickerLeft = picker->mapToItem(nullptr, QPointF(0, 0)).x();
+        QVERIFY2(nameRight <= pickerLeft, qPrintable(u"name ends at %1, picker starts at %2"_s.arg(nameRight).arg(pickerLeft)));
+    }
+
+    void themeWarningShownInStatusBar() {
+        launch();
+        services->theme().setMode(u"custom:Missing Theme"_s);
+        QQuickItem* message = item(u"status.message"_s);
+        QVERIFY(message);
+        QTRY_VERIFY(message->property("text").toString().contains(u"couldn't be loaded"_s));
+    }
+
+    void customResolutionShowsSizeFields() {
+        launch();
+        QQuickItem* combo = item(u"inspector.resolution"_s);
+        QVERIFY(combo);
+        QQuickItem* custom = item(u"inspector.customSize"_s);
+        QVERIFY(custom);
+        QVERIFY(!custom->isVisible());
+        QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, 6));
+        QTRY_VERIFY(custom->isVisible());
+        QCOMPARE(services->project().document().project().sequences.front().format.width, 1920);
+    }
+
+    void failedSaveAsClearsPendingAction() {
+        launch();
+        services->project().addTrack(u"video"_s); // 5 tracks, unsaved
+        // New Project → "Save" on an untitled project leaves "then start a new project" pending a Save As.
+        services->actions().action(u"file.new"_s)->trigger();
+        QObject* dialog = object(u"dialog.saveChanges"_s);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QMetaObject::invokeMethod(dialog, "choose", Q_ARG(QVariant, u"save"_s));
+        QTRY_VERIFY(window->property("afterSave").value<QJSValue>().isCallable());
+        // The Save As fails (missing folder): the pending action must be dropped...
+        const QUrl bad = QUrl::fromLocalFile(dir.filePath(u"no/such/folder/x.cutline"_s));
+        QMetaObject::invokeMethod(window, "finishSaveAs", Q_ARG(QVariant, QVariant(bad)));
+        QVERIFY(!window->property("afterSave").value<QJSValue>().isCallable());
+        // ...so a later, unrelated Save As doesn't suddenly replace the project.
+        QMetaObject::invokeMethod(window, "finishSaveAs",
+                                  Q_ARG(QVariant, QVariant(QUrl::fromLocalFile(dir.filePath(u"ok.cutline"_s)))));
+        QCOMPARE(services->project().tracks()->rowCount(), 5);
+    }
+
+    void trackRenameCommitsOnBlur() {
+        launch();
+        QQuickItem* name = item(u"track.V1.name"_s);
+        QVERIFY(name);
+        QMetaObject::invokeMethod(name, "startEditing");
+        QQuickItem* field = nullptr;
+        QTRY_VERIFY((field = item(u"track.V1.editor"_s)) && field->hasActiveFocus());
+        field->setProperty("text", QString());
+        for (char c : QByteArray("Blur"))
+            QTest::keyClick(window, c);
+        focusPanel(u"viewer"_s);
+        const auto* tracks = services->project().tracks();
+        QTRY_COMPARE(tracks->data(tracks->index(1, 0), tracks->roleNames().key("name")).toString(), u"Blur"_s);
     }
 
     void screenshotMode() {

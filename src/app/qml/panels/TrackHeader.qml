@@ -91,11 +91,12 @@ Rectangle {
                 id: editorLoader
                 anchors.fill: parent
                 active: header.editing
+                // Commits on Enter or when you click away; Escape reverts (like the Inspector's fields).
                 sourceComponent: CTextField {
                     objectName: "track." + header.code + ".editor"
                     value: header.name
-                    onAccepted: { Project.setTrackName(header.trackId, text); header.editing = false }
-                    onActiveFocusChanged: if (!activeFocus) header.editing = false
+                    onCommit: (v) => Project.setTrackName(header.trackId, v)
+                    onEditingDone: Qt.callLater(function() { header.editing = false })
                 }
             }
         }

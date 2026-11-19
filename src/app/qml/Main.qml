@@ -72,6 +72,17 @@ ApplicationWindow {
         })
     }
 
+    // Completes a Save As. Any action waiting on the save (quit, new, open) runs only if the save worked,
+    // and is dropped either way so a later, unrelated Save As can't trigger it.
+    function finishSaveAs(url) {
+        const ok = Project.saveAs(url)
+        const next = root.afterSave
+        root.afterSave = null
+        if (ok && next)
+            next()
+        return ok
+    }
+
     // Every UI action in the ActionRegistry has a handler here (tests check this).
     readonly property var uiHandlers: ({
         "file.new": () => root.confirmDiscard(() => Project.newProject()),
@@ -155,13 +166,7 @@ ApplicationWindow {
         fileMode: FileDialog.SaveFile
         defaultSuffix: "cutline"
         nameFilters: [qsTr("CUTLINE projects (*.cutline)")]
-        onAccepted: {
-            if (Project.saveAs(selectedFile) && root.afterSave) {
-                const next = root.afterSave
-                root.afterSave = null
-                next()
-            }
-        }
+        onAccepted: root.finishSaveAs(selectedFile)
         onRejected: root.afterSave = null
     }
     FileDialog {

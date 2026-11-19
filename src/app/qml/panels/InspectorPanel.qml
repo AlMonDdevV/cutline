@@ -106,16 +106,26 @@ PanelFrame {
                     }
                 }
                 InspectorRow {
+                    id: resolutionRow
+                    // "Custom" only reveals the size fields; the size changes when you type one.
+                    property bool customMode: false
+                    readonly property int customIndex: panel.seq.resolutionOptions.length - 1
                     label: qsTr("Resolution")
                     CComboBox {
+                        objectName: "inspector.resolution"
                         anchors.fill: parent
                         model: panel.seq.resolutionOptions
-                        currentIndex: panel.seq.resolutionIndex
-                        onActivated: (i) => panel.seq.resolutionIndex = i
+                        currentIndex: resolutionRow.customMode ? resolutionRow.customIndex : panel.seq.resolutionIndex
+                        onActivated: (i) => {
+                            resolutionRow.customMode = i === resolutionRow.customIndex
+                            if (!resolutionRow.customMode)
+                                panel.seq.resolutionIndex = i
+                        }
                     }
                 }
                 InspectorRow {
-                    visible: panel.seq.resolutionIndex === panel.seq.resolutionOptions.length - 1
+                    objectName: "inspector.customSize"
+                    visible: resolutionRow.customMode || panel.seq.resolutionIndex === resolutionRow.customIndex
                     label: qsTr("Width × height")
                     Row {
                         anchors.fill: parent

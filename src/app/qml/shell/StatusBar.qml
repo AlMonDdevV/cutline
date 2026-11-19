@@ -30,6 +30,16 @@ Rectangle {
         target: Project
         function onStatusMessageChanged() { if (Project.statusMessage.length > 0) clearTimer.restart() }
     }
+    // Theme problems after startup (a custom theme that can't load, a theme file saved with a mistake).
+    Connections {
+        target: Theme
+        function onWarningChanged() {
+            if (Theme.warning.length > 0) {
+                bar.warning = Theme.warning
+                warningTimer.restart()
+            }
+        }
+    }
 
     Rectangle { width: parent.width; height: 1; color: Theme.divider }
 

@@ -8,36 +8,52 @@ Rectangle {
     signal saveWorkspaceRequested()
 
     implicitHeight: Theme.headerHeight + Theme.space2
-    implicitWidth: leftGroup.implicitWidth + picker.implicitWidth + toggles.implicitWidth + Theme.space4 * 4
+    // Names elide, so only the logo counts towards the minimum width.
+    implicitWidth: logo.width + picker.implicitWidth + toggles.implicitWidth + Theme.space4 * 5
     color: Theme.panelRaised
 
-    Row {
+    // Logo, project name and sequence name share the space left of the workspace picker; long names elide.
+    Item {
         id: leftGroup
         anchors.left: parent.left
         anchors.leftMargin: Theme.space3
+        anchors.right: picker.left
+        anchors.rightMargin: Theme.space4
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Theme.space2
+        height: parent.height
 
         Image {
+            id: logo
             source: "image://icons/cutline-mark?color=e5484d"
             sourceSize: Qt.size(Math.round(20 * Theme.scale), Math.round(20 * Theme.scale))
+            width: sourceSize.width
+            height: sourceSize.height
             anchors.verticalCenter: parent.verticalCenter
             Accessible.name: "CUTLINE"
         }
         Text {
+            id: projectName
+            objectName: "header.projectName"
+            x: logo.width + Theme.space2
+            width: Math.max(0, Math.min(implicitWidth, leftGroup.width - x))
+            anchors.verticalCenter: parent.verticalCenter
             text: Project.projectName + (Project.dirty ? " *" : "")
+            elide: Text.ElideRight
             font.family: Theme.uiFont
             font.pixelSize: Theme.fontMd
             font.weight: Font.DemiBold
             color: Theme.text
-            anchors.verticalCenter: parent.verticalCenter
         }
         Text {
+            x: projectName.x + projectName.width + Theme.space2
+            width: Math.max(0, Math.min(implicitWidth, leftGroup.width - x))
+            visible: width >= Theme.space6 * 2
+            anchors.verticalCenter: parent.verticalCenter
             text: Project.sequence.name
+            elide: Text.ElideRight
             font.family: Theme.uiFont
             font.pixelSize: Theme.fontSm
             color: Theme.textMuted
-            anchors.verticalCenter: parent.verticalCenter
         }
     }
 

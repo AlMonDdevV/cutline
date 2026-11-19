@@ -10,6 +10,8 @@ TextField {
     property string value: ""
     property string committedText: ""
     signal commit(string value)
+    // Emitted after Enter, Escape or leaving the field (after any commit).
+    signal editingDone()
 
     font.family: Theme.uiFont
     font.pixelSize: Theme.fontMd
@@ -46,6 +48,7 @@ TextField {
             committedText = text
             field.commit(text)
         }
+        field.editingDone()
     }
 
     function cancelEditing() { text = committedText }

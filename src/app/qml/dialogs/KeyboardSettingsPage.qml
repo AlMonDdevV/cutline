@@ -118,12 +118,15 @@ Item {
                 ToolTip.text: description
                 HoverHandler { id: hover }
 
+                // The title takes whatever the key box and buttons leave, and elides; it never sits under them.
                 Column {
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.space2
+                    anchors.right: controls.left
+                    anchors.rightMargin: Theme.space3
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.45
                     Text {
+                        objectName: "keyboard.row." + row.actionId + ".title"
                         width: parent.width
                         text: row.title
                         elide: Text.ElideRight
@@ -132,7 +135,9 @@ Item {
                         color: Theme.text
                     }
                     Text {
+                        width: parent.width
                         text: row.contextsText
+                        elide: Text.ElideRight
                         font.family: Theme.uiFont
                         font.pixelSize: Theme.fontXs
                         color: Theme.textMuted
@@ -140,13 +145,16 @@ Item {
                 }
 
                 Row {
+                    id: controls
                     anchors.right: parent.right
                     anchors.rightMargin: Theme.space2
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.space1
 
                     Rectangle {
-                        width: Math.max(Math.round(150 * Theme.scale), keys.implicitWidth + Theme.space3 * 2)
+                        objectName: "keyboard.row." + row.actionId + ".keys"
+                        width: Math.min(Math.max(Math.round(120 * Theme.scale), keys.implicitWidth + Theme.space3 * 2),
+                                        Math.round(row.width * 0.4))
                         height: Theme.rowHeight
                         radius: Theme.radius
                         color: Theme.field

@@ -7,7 +7,10 @@ CDialog {
     id: dialog
     objectName: "dialog.settings"
     title: qsTr("Settings")
-    width: Math.min(820, (parent ? parent.width : 820) - Theme.space6 * 2)
+    width: Math.min(Math.round(820 * Theme.scale), (parent ? parent.width : 820) - Theme.space6 * 2)
+    // Room left for the page once the title, footer and padding are drawn, so Done stays on screen.
+    readonly property real availablePageHeight: (parent ? parent.height : 768) - Theme.space6 * 2
+                                                - Theme.headerHeight * 2 - Theme.space4 * 4 - Theme.fontLg * 2
 
     property string page: "general"
     signal importThemeRequested()
@@ -52,7 +55,7 @@ CDialog {
 
         Loader {
             width: parent.width - nav.width - Theme.space4
-            height: Math.round(440 * Theme.scale)
+            height: Math.max(Math.round(160 * Theme.scale), Math.min(Math.round(440 * Theme.scale), dialog.availablePageHeight))
             sourceComponent: dialog.page === "keyboard" ? keyboardPage : generalPage
         }
     }
