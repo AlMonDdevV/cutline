@@ -4,6 +4,17 @@ add_library(cutline_core STATIC
     Result.h
     Time.h
     Time.cpp
+    Project.h
+    Project.cpp
+    Validation.h
+    Validation.cpp
+    Command.h
+    Commands.h
+    Commands.cpp
+    Document.h
+    Document.cpp
+    ProjectIO.h
+    ProjectIO.cpp
 )
 
 target_include_directories(cutline_core

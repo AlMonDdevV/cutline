@@ -1,4 +1,7 @@
 cutline_add_test(NAME tst_time SOURCES core/tst_time.cpp LIBS cutline_core)
+cutline_add_test(NAME tst_commands SOURCES core/tst_commands.cpp LIBS cutline_core)
+cutline_add_test(NAME tst_document SOURCES core/tst_document.cpp LIBS cutline_core)
+cutline_add_test(NAME tst_projectio SOURCES core/tst_projectio.cpp LIBS cutline_core)
 
 cutline_add_test(NAME tst_ffmpeginfo SOURCES media/tst_ffmpeginfo.cpp LIBS cutline_media)
 if(CUTLINE_OFFICIAL_BUILD)
