@@ -11,6 +11,10 @@ qt_add_library(cutline_ui STATIC
     actions/ActionRegistry.cpp
     actions/ShortcutProfile.h
     actions/ShortcutProfile.cpp
+    actions/ShortcutRouter.h
+    actions/ShortcutRouter.cpp
+    actions/ShortcutRecorder.h
+    actions/ShortcutRecorder.cpp
     icons/IconProvider.h
     icons/IconProvider.cpp
     theme/Palette.h
@@ -67,6 +71,15 @@ target_link_libraries(cutline_ui
         Qt6::QuickControls2
         Qt6::Svg
         cutline_ico
+)
+# qmltyperegistrar includes QML_ELEMENT headers by bare file name.
+target_include_directories(cutline_ui PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/actions"
+    "${CMAKE_CURRENT_SOURCE_DIR}/controllers"
+    "${CMAKE_CURRENT_SOURCE_DIR}/layout"
+    "${CMAKE_CURRENT_SOURCE_DIR}/theme"
+    "${CMAKE_CURRENT_SOURCE_DIR}/icons"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 cutline_set_warnings(cutline_ui)
 

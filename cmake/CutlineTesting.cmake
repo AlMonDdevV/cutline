@@ -18,7 +18,8 @@ function(cutline_add_test)
 
     set(env "")
     if(ARG_GUI)
-        list(APPEND env "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software")
+        list(APPEND env "QT_QPA_PLATFORM=offscreen" "QT_QUICK_BACKEND=software"
+            "QT_QPA_FONTDIR=${PROJECT_SOURCE_DIR}/resources/fonts")
     endif()
     if(env)
         set_tests_properties(${ARG_NAME} PROPERTIES ENVIRONMENT "${env}")
