@@ -14,3 +14,6 @@ vcpkg_installed/
 
 # Agent workspaces (plan ledgers, review packages)
 .superpowers/
+
+# Third-party reference screenshots (Final Cut Pro, DaVinci Resolve): kept locally, never published
+references/

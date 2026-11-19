@@ -10,6 +10,8 @@ Milestone 1, part 1. Written 2026-11-18 before any design or code work.
 | `references/ref-2-finalcut-effects-browser.jpg` (1400×788) | Final Cut Pro: 2×2 scopes grid, inspector sections, timeline with the effects browser docked beside it |
 | `references/ref-3-resolve-edit-page.jpg` (2000×1107) | DaVinci Resolve 18 Edit page: media pool, dual viewers, inspector, track-based timeline, audio mixer, page bar |
 
+The screenshots are third-party copyrighted images (Apple, Blackmagic Design). They are kept in a local, git-ignored `references/` folder and are not published with this repository; this page records what was learned from them.
+
 These three images are the only CUTLINE references supplied. There is no separate reference folder or
 design document for CUTLINE. (`Documents\BUILDZ\Refrance` exists but holds BUILDZ branding and a
 glass-style chat mockup for a different project, so it was not used.)
