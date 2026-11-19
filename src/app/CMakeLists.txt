@@ -4,6 +4,27 @@ target_link_libraries(cutline_ico PUBLIC Qt6::Gui)
 cutline_set_warnings(cutline_ico)
 
 qt_add_library(cutline_ui STATIC
+    AppServices.h
+    AppServices.cpp
+    QmlSingletons.h
+    actions/DefaultActions.h
+    actions/DefaultActions.cpp
+    controllers/AppSettings.h
+    controllers/AppSettings.cpp
+    controllers/RecentProjects.h
+    controllers/RecentProjects.cpp
+    controllers/TracksModel.h
+    controllers/TracksModel.cpp
+    controllers/HistoryModel.h
+    controllers/HistoryModel.cpp
+    controllers/SequenceInspector.h
+    controllers/SequenceInspector.cpp
+    controllers/ProjectController.h
+    controllers/ProjectController.cpp
+    controllers/TimecodeHelper.h
+    controllers/TimecodeHelper.cpp
+    controllers/AppInfo.h
+    controllers/AppInfo.cpp
     layout/WorkspaceLayout.h
     layout/WorkspaceLayout.cpp
     layout/PanelRegistry.h
