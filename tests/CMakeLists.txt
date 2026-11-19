@@ -14,3 +14,5 @@ cutline_add_test(NAME tst_palette SOURCES app/tst_palette.cpp LIBS cutline_ui GU
 cutline_add_test(NAME tst_themelibrary SOURCES app/tst_themelibrary.cpp LIBS cutline_ui GUI)
 cutline_add_test(NAME tst_fonts SOURCES app/tst_fonts.cpp LIBS cutline_ui GUI)
 cutline_add_test(NAME tst_icons SOURCES app/tst_icons.cpp LIBS cutline_ui GUI)
+cutline_add_test(NAME tst_actions SOURCES app/tst_actions.cpp LIBS cutline_ui GUI)
+cutline_add_test(NAME tst_shortcutprofile SOURCES app/tst_shortcutprofile.cpp LIBS cutline_ui GUI)

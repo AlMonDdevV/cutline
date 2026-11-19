@@ -4,6 +4,13 @@ target_link_libraries(cutline_ico PUBLIC Qt6::Gui)
 cutline_set_warnings(cutline_ico)
 
 qt_add_library(cutline_ui STATIC
+    actions/Contexts.h
+    actions/Action.h
+    actions/Action.cpp
+    actions/ActionRegistry.h
+    actions/ActionRegistry.cpp
+    actions/ShortcutProfile.h
+    actions/ShortcutProfile.cpp
     icons/IconProvider.h
     icons/IconProvider.cpp
     theme/Palette.h
