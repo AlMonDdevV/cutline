@@ -307,9 +307,9 @@ Result<Project> deserializeProject(const QByteArray& json) {
 Status saveProject(const Project& project, const QString& path) {
     // Refuse to replace a read-only project on every platform. (Unix would otherwise allow it whenever the
     // folder is writable, because QSaveFile replaces the file by renaming a new one over it.)
+    // Only the file's own mode bits count: "WriteUser" is an access check, which is always true for root.
     if (QFile::exists(path) &&
-        !(QFile::permissions(path) & (QFileDevice::WriteOwner | QFileDevice::WriteUser | QFileDevice::WriteGroup |
-                                      QFileDevice::WriteOther)))
+        !(QFile::permissions(path) & (QFileDevice::WriteOwner | QFileDevice::WriteGroup | QFileDevice::WriteOther)))
         return Status::failure(QStringLiteral("Couldn't save the project: the file is read-only."));
     QSaveFile file(path);
     const QByteArray bytes = serializeProject(project);

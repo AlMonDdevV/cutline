@@ -460,7 +460,7 @@ private slots:
         QProcess p;
         QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
         p.setProcessEnvironment(env);
-        p.start(QCoreApplication::applicationDirPath() + u"/cutline"_s,
+        p.start(QStringLiteral(CUTLINE_APP_PATH), // the real cutline binary (inside cutline.app on macOS)
                 {u"--screenshot"_s, out, u"--size"_s, u"1600x900"_s, u"--theme"_s, u"light"_s});
         QVERIFY(p.waitForFinished(60000));
         QCOMPARE(p.exitCode(), 0);

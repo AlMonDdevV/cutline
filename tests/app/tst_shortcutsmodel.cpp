@@ -76,7 +76,9 @@ private slots:
 
     void assignWithoutReplaceRefuses() {
         QVERIFY(!model->assign(u"panel.history"_s, u"Ctrl+S"_s, false));
-        QCOMPARE(model->lastError(), u"Ctrl+S is already used by “Save Project”."_s);
+        // Native key text: "Ctrl+S" on Windows and Linux, "⌘S" on macOS.
+        QCOMPARE(model->lastError(),
+                 QKeySequence(u"Ctrl+S"_s).toString(QKeySequence::NativeText) + u" is already used by “Save Project”."_s);
         QVERIFY(services->actions().action(u"panel.history"_s)->shortcuts().isEmpty());
     }
 
