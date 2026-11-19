@@ -29,14 +29,16 @@ if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = [Environment]::GetEnvironmentVaria
 if (-not $env:VCPKG_ROOT) { throw 'VCPKG_ROOT is not set. See docs/building.md.' }
 
 if (-not $env:VSCMD_VER) {
-    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+    $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer'
+    $env:PATH = "$installer;$env:PATH"   # VsDevCmd calls vswhere by name
+    $vswhere = Join-Path $installer 'vswhere.exe'
     $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
     if (-not $vs) { throw 'Visual Studio with the C++ tools was not found. See docs/building.md.' }
     Import-Module (Join-Path $vs 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
     Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64' | Out-Null
 }
 
-$exe = Join-Path $root "build\$Preset\src\app\main\cutline.exe"
+$exe = Join-Path $root "build\$Preset\cutline.exe"
 Push-Location $root
 try {
     switch ($Target) {
@@ -46,7 +48,8 @@ try {
         { $_ -in 'run', 'screenshot' } {
             $env:PATH = "$env:QT_ROOT_DIR\bin;$env:PATH"
             if ($Target -eq 'run') {
-                Start-Process -FilePath $exe -ArgumentList $Rest
+                if ($Rest.Count -gt 0) { Start-Process -FilePath $exe -ArgumentList $Rest }
+                else { Start-Process -FilePath $exe }
                 $global:LASTEXITCODE = 0
             } else {
                 & $exe @Rest
