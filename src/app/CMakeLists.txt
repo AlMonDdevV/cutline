@@ -21,6 +21,7 @@ qt_add_qml_module(cutline_ui
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/controls/Icon.qml
 )
 
 qt_add_resources(cutline_ui "cutline_theme"
